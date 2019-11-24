@@ -1,6 +1,7 @@
 from flask import *
 from flask_bootstrap import Bootstrap
 import psycopg2
+from psycopg2 import sql
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -25,7 +26,9 @@ except Exception as e:
     print(e)
 
 def loadInfoFromProfile(columnname, tablename, name):
-    cur.execute('SELECT %s FROM %s WHERE user_id = (select user_id from person where login = %s)', (columnname, tablename, name,))
+    cur.execute(
+        sql.SQL("SELECT {0} FROM {1} WHERE user_id = (select user_id from person where login = %s)")
+            .format(sql.Identifier(columnname), sql.Identifier(tablename)),[name])
     result = cur.fetchone()
     profileData = ''
     if result is not None:
@@ -33,14 +36,26 @@ def loadInfoFromProfile(columnname, tablename, name):
     conn.commit()
     return profileData
 
-def loadInfoFromPerson(data, name):
-    cur.execute('SELECT %s FROM person WHERE user_id = (select user_id from person where login = %s)', (data, name,))
+def loadInfoFromPerson(columnname, name):
+    cur.execute(
+        sql.SQL("SELECT {} FROM person WHERE user_id = (select user_id from person where login = %s)")
+            .format(sql.Identifier(columnname)), [name])
     result = cur.fetchone()
     profileData = ''
     if result is not None:
         profileData = result[0]
     conn.commit()
     return profileData
+
+def userExist(tablename, id):
+    cur.execute(sql.SQL("SELECT user_id FROM {} WHERE user_id = %s").format(sql.Identifier(tablename)), [id])
+    result = cur.fetchone()
+    if result is not None:
+        item = 1
+    else:
+        item = 0
+    conn.commit()
+    return item
 
 @app.route('/')
 def index():
@@ -58,10 +73,8 @@ def signUp():
 
         if login == '' or password == '' or email == '' or phone == '':
             return render_template("sign_up.html", message='Пожайлуста, заполните все поля')
-        elif status == '' and login != 'admin':
+        elif status == '':
             return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
-        elif login == 'admin':
-            status = 'admin'
 
         try:
             cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, password, status, email, phone))
@@ -214,30 +227,22 @@ def profileEdit(status, username):
             companyPhone = request.form.get('company_phone')
             companyEmail = request.form.get('company_email')
 
-            cur.execute('SELECT user_id FROM company WHERE user_id = %s', (userID, ))
-            result = cur.fetchone()
-            isCompany = None
-            if result is not None:
-                isCompany = 1
-            else:
-                isCompany = 0
-            conn.commit()
+            isCompany = userExist('company', userID)
 
             try:
                 if isCompany == 0:
                     if inn == '' or companyName == '' or companyPhone == '' or companyEmail == '':
                         return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                    cur.execute("insert into company (user_id, inn, company_name, company_phone, company_email) values (%s, %s, %s, %s, %s)",
-                                (userID, inn, companyName, companyPhone, companyEmail))
+                    cur.execute("insert into company (user_id, inn, company_name) values (%s, %s, %s)", (userID, inn, companyName, ))
                 else:
-                    if inn is not '':
+                    if inn != '':
                         cur.execute('update company set inn = %s WHERE user_id = %s', (inn, userID, ))
-                    if companyName is not '':
+                    if companyName != '':
                         cur.execute('update company set company_name = %s WHERE user_id = %s', (companyName, userID,))
-                    if companyPhone is not '':
-                        cur.execute('update company set company_phone = %s WHERE user_id = %s', (companyPhone, userID,))
-                    if companyEmail is not '':
-                        cur.execute('update company set company_email = %s WHERE user_id = %s', (companyEmail, userID,))
+                    if companyPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (companyPhone, userID,))
+                    if companyEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (companyEmail, userID,))
                 conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
@@ -253,28 +258,20 @@ def profileEdit(status, username):
             employeePhone = request.form.get('employee_phone')
             employeeEmail = request.form.get('employee_email')
 
-            cur.execute('SELECT user_id FROM employee WHERE user_id = %s', (userID, ))
-            result = cur.fetchone()
-            isEmployee = None
-            if result is not None:
-                isEmployee = 1
-            else:
-                isEmployee = 0
-            conn.commit()
+            isEmployee = userExist('employee', userID)
 
             try:
                 if isEmployee == 0:
                     if fullName == '' or employeePhone == '' or employeeEmail == '':
                         return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                    cur.execute("insert into employee (user_id, full_name, employee_phone, employee_email) values (%s, %s, %s, %s)",
-                                (userID, fullName, employeePhone, employeeEmail))
+                    cur.execute("insert into employee (user_id, full_name) values (%s, %s)", (userID, fullName, ))
                 else:
-                    if fullName is not '':
+                    if fullName != '':
                         cur.execute('update employee set full_name = %s WHERE user_id = %s', (fullName, userID, ))
-                    if employeePhone is not '':
-                        cur.execute('update employee set employee_phone = %s WHERE user_id = %s', (employeePhone, userID,))
-                    if employeeEmail is not '':
-                        cur.execute('update employee set employee_email = %s WHERE user_id = %s', (employeeEmail, userID,))
+                    if employeePhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (employeePhone, userID,))
+                    if employeeEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (employeeEmail, userID,))
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
@@ -287,28 +284,20 @@ def profileEdit(status, username):
             customerPhone = request.form.get('customer_phone')
             customerEmail = request.form.get('customer_email')
 
-            cur.execute('SELECT user_id FROM customer WHERE user_id = %s', (userID, ))
-            result = cur.fetchone()
-            isCustomer = None
-            if result is not None:
-                isCustomer = 1
-            else:
-                isCustomer = 0
-            conn.commit()
+            isCustomer = userExist('employee', userID)
 
             try:
                 if isCustomer == 0:
                     if customerName == '' or customerPhone == '' or customerEmail == '':
                         return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                    cur.execute("insert into customer (user_id, customer_name, customer_phone, customer_email) values (%s, %s, %s, %s)",
-                                (userID, customerName, customerPhone, customerEmail))
+                    cur.execute("insert into customer (user_id, customer_name) values (%s, %s)", (userID, customerName, ))
                 else:
-                    if customerName is not '':
+                    if customerName != '':
                         cur.execute('update customer set customer_name = %s WHERE user_id = %s', (customerName, userID, ))
-                    if customerPhone is not '':
-                        cur.execute('update customer set customer_phone = %s WHERE user_id = %s', (customerPhone, userID,))
-                    if customerEmail is not '':
-                        cur.execute('update customer set customer_email = %s WHERE user_id = %s', (customerEmail, userID,))
+                    if customerPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (customerPhone, userID,))
+                    if customerEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (customerEmail, userID,))
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
