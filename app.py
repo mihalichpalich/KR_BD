@@ -177,38 +177,19 @@ def profile(status, username):
         # загружаем email
         customerEmail = loadInfoFromPerson('email', username)
         return render_template("profile.html", status=status, username=username, customerName=customerName, customerPhone=customerPhone, customerEmail=customerEmail)
-    #
-    # if status == 'performer':
-    #     # загружаем имя
-    #     cur.execute(  #         'SELECT customer_name FROM customer WHERE user_id = (select user_id from person where login = %s)',
-    #         (username,))
-    #     result = cur.fetchone()
-    #     customerName = ''
-    #     if result is not None:
-    #         customerName = result[0]
-    #     conn.commit()
-    #
-    #     # загружаем телефон
-    #     cur.execute(
-    #         'SELECT customer_phone FROM customer WHERE user_id = (select user_id from person where login = %s)',
-    #         (username,))
-    #     result = cur.fetchone()
-    #     customerPhone = ''
-    #     if result is not None:
-    #         customerPhone = result[0]
-    #     conn.commit()
-    #
-    #     # загружаем email
-    #     cur.execute(
-    #         'SELECT customer_email FROM customer WHERE user_id = (select user_id from person where login = %s)',
-    #         (username,))
-    #     result = cur.fetchone()
-    #     customerEmail = ''
-    #     if result is not None:
-    #         customerEmail = result[0]
-    #     conn.commit()
-    #     return render_template("profile.html", status=status, username=username, customerName=customerName,
-    #                            customerPhone=customerPhone, customerEmail=customerEmail)
+
+    if status == 'performer':
+        # загружаем имя
+        performerName = loadInfoFromProfile('performer_name', 'performer', username)
+
+        # загружаем описание услуг
+        servicesDescr = loadInfoFromProfile('services_descr', 'performer', username)
+        # загружаем телефон
+        performerPhone = loadInfoFromPerson('phone', username)
+        # загружаем email
+        performerEmail = loadInfoFromPerson('email', username)
+        return render_template("profile.html", status=status, username=username, performerName=performerName, servicesDescr=servicesDescr,
+                               performerPhone=performerPhone, performerEmail=performerEmail)
 
 # страница редактирования профиля
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
@@ -246,7 +227,7 @@ def profileEdit(status, username):
                 conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным ИНН или телефоном уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным ИНН, телефоном или email уже существует!')
             except psycopg2.errors.StringDataRightTruncation:
                 conn.rollback()
                 return render_template("profile_edit.html", message='ИНН должен состоять не более чем из 10 символов!')
@@ -275,7 +256,7 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным телефоном уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
             return redirect(url_for('profile', status=status, username=username))
 
     if status == 'customer':
@@ -301,9 +282,35 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным телефоном уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
             return redirect(url_for('profile', status=status, username=username))
 
+    if status == 'performer':
+        if request.method == 'POST':
+            performerName = request.form.get('performer_name')
+            servicesDescr = request.form.get('services_descr')
+            performerPhone = request.form.get('performer_phone')
+            performerEmail = request.form.get('performer_email')
+
+            isPerformer = userExist('performer', userID)
+
+            try:
+                if isPerformer == 0:
+                    if performerName == '' or performerPhone == '' or performerEmail == '':
+                        return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
+                    cur.execute("insert into performer (user_id, performer_name, servicesDescr) values (%s, %s, %s)", (userID, performerName, servicesDescr, ))
+                else:
+                    if performerName != '':
+                        cur.execute('update performer set performer_name = %s WHERE user_id = %s', (performerName, userID, ))
+                    if performerPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (performerPhone, userID,))
+                    if performerEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (performerEmail, userID,))
+                    conn.commit()
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
+            return redirect(url_for('profile', status=status, username=username))
     return render_template("profile_edit.html", status=status, username=username)
 
 # панель администратора
