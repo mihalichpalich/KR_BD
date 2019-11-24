@@ -1,0 +1,56 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Регистрация{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <form action="{{ url_for('signUp') }}" method="POST">
+                    <div class="form-group">
+                        <label for="login">Login</label>
+                        <input type="text" name="username" class="form-control" id="login" placeholder="Login">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" class="form-control" id="email" placeholder="Email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Телефон</label>
+                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone">
+                    </div>
+
+                    <div class="btn-group btn-group-toggle form-group" data-toggle="buttons">
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="status" id="status1" autocomplete="off" value="company">Работодатель
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="status" id="status2" autocomplete="off" value="employee">Соискатель
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="status" id="status3" autocomplete="off" value="customer">Заказчик
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="status" id="status4" autocomplete="off" value="performer">Исполнитель
+                        </label>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Регистрация</button>
+                    </div>
+                </form>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

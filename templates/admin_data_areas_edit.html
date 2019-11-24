@@ -1,0 +1,37 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Изменить сферу деятельности{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <form action="{{ url_for('adminDataAreasEdit') }}" method="POST">
+                    <div class="form-group">
+                        <label for="login">Введите сферу деятельности:</label>
+                        <input type="text" name="old_area" class="form-control" id="old_area">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login">Введите новое название:</label>
+                        <input type="text" name="new_area" class="form-control" id="new_area">
+                    </div>
+
+                    <div class="row justify-content-end form-group">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Изменить</button>
+                    </div>
+                </form>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+
+                <ul class="list-group">
+                    {% for item in areas %}
+                        <li class="list-group-item">{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

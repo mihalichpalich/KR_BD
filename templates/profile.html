@@ -1,0 +1,83 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Личный кабинет{% endblock title %}
+
+{%- block content %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                {% if status == 'company' %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">О компании
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Мои вакансии</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Каталог резюме</a>
+                    </li>
+                {% endif %}
+
+                {% if status == 'employee' %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">О соискателе
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Мои резюме</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Каталог вакансий</a>
+                    </li>
+                {% endif %}
+
+                {% if status == 'customer' %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">О заказчике
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Мои заказы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Каталог исполнителей</a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <button type="button" class="btn btn-primary"><a href="{{ (url_for('login')) }}" class="text-white">Выйти</a></button>
+        </div>
+    </div>
+</nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-3 align-self-center form-group">
+                {% if status == 'company' %}
+                    <p><strong>ИНН: </strong>{{ inn }}</p>
+                    <p><strong>Название фирмы: </strong>{{ companyName }}</p>
+                    <p><strong>Телефон фирмы: </strong>{{ companyPhone }}</p>
+                    <p><strong>e-mail фирмы: </strong>{{ companyEmail }}</p>
+                {% endif %}
+
+                {% if status == 'employee' %}
+                    <p><strong>ФИО: </strong>{{ fullName }}</p>
+                    <p><strong>Телефон: </strong>{{ employeePhone }}</p>
+                    <p><strong>e-mail: </strong>{{ employeeEmail }}</p>
+                {% endif %}
+
+                {% if status == 'customer' %}
+                    <p><strong>ФИО: </strong>{{ customerName }}</p>
+                    <p><strong>Телефон: </strong>{{ customerPhone }}</p>
+                    <p><strong>e-mail: </strong>{{ customerEmail }}</p>
+                {% endif %}
+                <button type="submit" class="btn btn-primary"><a href="{{ (url_for('profileEdit', status=status, username=username)) }}" class="text-white">Редактировать</a></button>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

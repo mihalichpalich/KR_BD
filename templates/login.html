@@ -1,0 +1,35 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Авторизация{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <form action="{{ url_for('login') }}" method="POST">
+                    <div class="form-group">
+                        <label for="login">Login</label>
+                        <input type="text" name="username" class="form-control" id="login" placeholder="Login">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+                    </div>
+
+                    <div class="row justify-content-end form-group">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Войти</button>
+                    </div>
+                </form>
+
+                <a href="{{ url_for('pwRec') }}">Забыли пароль?</a><br>
+
+                <a href="{{ url_for('signUp') }}">Зарегистрироваться</a>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

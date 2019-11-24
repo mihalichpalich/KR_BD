@@ -1,0 +1,15 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Успех!{% endblock title %}
+
+{%- block content %}
+    {{super()}}
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-xs-3 align-self-center">
+          <p>Вы успешно зарегистрировались!</p>
+          <p>Перейдите по этой <a href="{{ url_for('login') }}">ссылке</a>, чтобы войти на сайт.</p>
+        </div>
+      </div>
+    </div>
+{%- endblock content %}

@@ -1,0 +1,17 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Добро пожаловать на сайт{% endblock title %}
+
+{%- block content %}
+    {{super()}}
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="btn-group-vertical col-xs-3">
+          <button type="button" class="btn btn-light"><a href="{{ url_for('login') }}"><h1>Войти</h1></a></button>
+          <button type="button" class="btn btn-light"><a href="{{ url_for('signUp') }}"><h1>Зарегистрироваться</h1></a></button>
+          <button type="button" class="btn btn-light"><a href="#"><h1>Продолжить как гость</h1></a></button>
+        </div>
+      </div>
+    </div>
+{%- endblock content %}
