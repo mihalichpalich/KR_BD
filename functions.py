@@ -4,6 +4,34 @@ from psycopg2 import sql
 conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
 cur = conn.cursor()
 
+def createDatabase():
+    try:
+        cur.execute(
+            "CREATE TABLE if not exists person (user_id serial primary key, login varchar(15) NOT null unique, password TEXT NOT NULL, status TEXT NOT NULL, email TEXT NOT NULL unique, phone TEXT NOT NULL unique);")
+        conn.commit()
+        cur.execute(
+            "CREATE TABLE if not exists company (user_id int primary key references person, inn varchar(10) NOT null unique, company_name TEXT NOT NULL);")
+        conn.commit()
+        cur.execute(
+            "CREATE TABLE if not exists employee (user_id int primary key references person, full_name text NOT null);")
+        conn.commit()
+        cur.execute(
+            "CREATE TABLE if not exists customer (user_id int primary key references person, customer_name text NOT null);")
+        conn.commit()
+        cur.execute("CREATE TABLE if not exists area (area_name text not null primary key);")
+        conn.commit()
+        cur.execute(
+            "CREATE TABLE if not exists performer (user_id int primary key references person, performer_name text NOT null, area_name text NOT null references area, services_descr TEXT NOT NULL);")
+        conn.commit()
+        cur.execute("CREATE TABLE if not exists industry (industry_name text not null primary key);")
+        conn.commit()
+        cur.execute("CREATE TABLE if not exists profession (profession_name text not null primary key);")
+        conn.commit()
+        cur.execute("CREATE TABLE if not exists industry_profession (industry_name text not null, profession_name text not null, foreign key (industry_name) references industry, foreign key (profession_name) references profession);")
+        conn.commit()
+    except Exception as e:
+        print(e)
+
 def loadInfoFromProfile(columnname, tablename, name):
     cur.execute(
         sql.SQL("SELECT {0} FROM {1} WHERE user_id = (select user_id from person where login = %s)")
@@ -36,8 +64,8 @@ def userExist(tablename, id):
     conn.commit()
     return item
 
-def areasLoad():
-    cur.execute("select * from area")
+def selectColumn(columnname, tablename):
+    cur.execute(sql.SQL("SELECT {0} FROM {1}").format(sql.Identifier(columnname), sql.Identifier(tablename)))
     result = cur.fetchall()
     result_new = list(sum(result, ()))
     conn.commit()

@@ -6,21 +6,7 @@ from functions import *
 app = Flask(__name__)
 Bootstrap(app)
 
-try:
-    cur.execute("CREATE TABLE if not exists person (user_id serial primary key, login varchar(15) NOT null unique, password TEXT NOT NULL, status TEXT NOT NULL, email TEXT NOT NULL unique, phone TEXT NOT NULL unique);")
-    conn.commit()
-    cur.execute("CREATE TABLE if not exists company (user_id int primary key references person, inn varchar(10) NOT null unique, company_name TEXT NOT NULL);")
-    conn.commit()
-    cur.execute("CREATE TABLE if not exists employee (user_id int primary key references person, full_name text NOT null);")
-    conn.commit()
-    cur.execute("CREATE TABLE if not exists customer (user_id int primary key references person, customer_name text NOT null);")
-    conn.commit()
-    cur.execute("CREATE TABLE if not exists area (area_name text not null primary key);")
-    conn.commit()
-    cur.execute("CREATE TABLE if not exists performer (user_id int primary key references person, performer_name text NOT null, area_name text NOT null references area, services_descr TEXT NOT NULL);")
-    conn.commit()
-except Exception as e:
-    print(e)
+createDatabase()
 
 @app.route('/')
 def index():
@@ -252,7 +238,7 @@ def profileEdit(status, username):
             return redirect(url_for('profile', status=status, username=username))
 
     if status == 'performer':
-        areas = areasLoad()
+        areas = selectColumn('area_name','area')
 
         if request.method == 'POST':
             performerName = request.form.get('performer_name')
@@ -297,10 +283,43 @@ def admin():
 def adminData():
     return render_template("admin_data.html")
 
-# админка, отрасли и должности
+# АДМИНКА, ОТРАСЛИ И ДОЛЖНОСТИ
 @app.route('/admin_data_ip')
 def adminDataIP():
     return render_template("admin_data_ip.html")
+
+# добавление
+@app.route('/admin_data_ip_add', methods=['GET', 'POST'])
+def adminDataIPAdd():
+    industries = selectColumn('industry_name', 'industry_profession')
+    professions = selectColumn('profession_name', 'industry_profession')
+
+    if request.method == 'POST':
+        industry = request.form.get('industry')
+        profession = request.form.get('profession')
+
+        if industry == '' or profession == '':
+            return render_template("admin_data_ip_add.html", message='Не введена отрасль или дожность!')
+        else:
+            try:
+                if industry not in industries:
+                    cur.execute("insert into industry (industry_name) values (%s)", (industry, ))
+                    conn.commit()
+                if profession not in professions:
+                    cur.execute("insert into profession (profession_name) values (%s)", (profession, ))
+                    conn.commit()
+                cur.execute("insert into industry_profession (industry_name, profession_name) values (%s, %s)", (industry, profession, ))
+                conn.commit()
+                return redirect(url_for('adminDataIPAdd'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions)
+    return render_template("admin_data_ip_add.html", industries=industries, professions=professions)
+
+# изменение
+@app.route('/admin_data_ip_edit')
+def adminDataIPEdit():
+    return render_template("admin_data_ip_edit.html")
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
 @app.route('/admin_data_areas')
@@ -310,7 +329,7 @@ def adminDataAreas():
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
-    areas = areasLoad()
+    areas = selectColumn('area_name', 'area')
 
     if request.method == 'POST':
         area = request.form.get('area')
@@ -319,19 +338,18 @@ def adminDataAreasAdd():
             try:
                 cur.execute("insert into area (area_name) values (%s)", (area, ))
                 conn.commit()
-                return redirect(url_for('adminDataAreasAdd', areas=result_new))
+                return redirect(url_for('adminDataAreasAdd'))
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!')
+        else:
+            return render_template("admin_data_areas_add.html", message='Не введена сфера деятельности!')
     return render_template("admin_data_areas_add.html", areas=areas)
 
 # изменение
 @app.route('/admin_data_areas_edit', methods=['GET', 'POST'])
 def adminDataAreasEdit():
-    cur.execute("select * from area")
-    result = cur.fetchall()
-    result_new = list(sum(result, ()))
-    conn.commit()
+    areas = selectColumn('area_name', 'area')
 
     if request.method == 'POST':
         areaOld = request.form.get('old_area')
@@ -347,7 +365,7 @@ def adminDataAreasEdit():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!')
-    return render_template("admin_data_areas_edit.html", areas=result_new)
+    return render_template("admin_data_areas_edit.html", areas=areas)
 
 @app.route('/vacancy_cat')
 def vacancyCat():

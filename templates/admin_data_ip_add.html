@@ -1,0 +1,49 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Добавить отрасли и должности{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <form action="{{ url_for('adminDataIPAdd') }}" method="POST">
+                    <div class="form-group">
+                        <label for="industry">Введите отрасль:</label>
+                        <input type="text" name="industry" class="form-control" id="industry">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profession">Введите соответствующую ей должность:</label>
+                        <input type="text" name="profession" class="form-control" id="profession">
+                    </div>
+
+                    <div class="row justify-content-end form-group">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Добавить</button>
+                    </div>
+                </form>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <ul class="list-group">
+                    {% for item1 in industries %}
+                        <li class="list-group-item">{{ item1 }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col-xs-3">
+                <ul class="list-group">
+                    {% for item2 in professions %}
+                        <li class="list-group-item">{{ item2 }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}
