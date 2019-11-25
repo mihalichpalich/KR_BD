@@ -63,6 +63,36 @@
                         </div>
                     {% endif %}
 
+                    {% if status == 'performer' %}
+                        <div class="form-group">
+                            <label for="login">Имя:</label>
+                            <input type="text" name="performer_name" class="form-control" id="performer_name">
+                        </div>
+
+                        <select class="custom-select" id="inputGroupSelect01" name="performer_area">
+                            <option selected value="" disabled>Выберите сферу деятельности</option>
+
+                            {% for item in areas %}
+                                <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="form-group">
+                            <label for="password">О своей деятельности::</label>
+                            <input type="text" name="services_descr" class="form-control" id="services_descr">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Телефон:</label>
+                            <input type="text" name="performer_phone" class="form-control" id="phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">e-mail:</label>
+                            <input type="email" name="performer_email" class="form-control" id="customer_email">
+                        </div>
+                    {% endif %}
+
                     <div class="row justify-content-end form-group">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Сохранить</button>
                     </div>

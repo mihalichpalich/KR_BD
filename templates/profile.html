@@ -48,6 +48,17 @@
                         <a class="nav-link" href="#">Каталог исполнителей</a>
                     </li>
                 {% endif %}
+
+                {% if status == 'performer' %}
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">О исполнителе
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Каталог заказчиков</a>
+                    </li>
+                {% endif %}
             </ul>
 
             <button type="button" class="btn btn-primary"><a href="{{ (url_for('login')) }}" class="text-white">Выйти</a></button>
@@ -75,6 +86,14 @@
                     <p><strong>ФИО: </strong>{{ customerName }}</p>
                     <p><strong>Телефон: </strong>{{ customerPhone }}</p>
                     <p><strong>e-mail: </strong>{{ customerEmail }}</p>
+                {% endif %}
+
+                {% if status == 'performer' %}
+                    <p><strong>Имя: </strong>{{ performerName }}</p>
+                    <p><strong>Сфера деятельности: </strong>{{ performerArea }}</p>
+                    <p><strong>О своей деятельности: </strong>{{ servicesDescr }}</p>
+                    <p><strong>Телефон: </strong>{{ performerPhone }}</p>
+                    <p><strong>e-mail: </strong>{{ performerEmail }}</p>
                 {% endif %}
                 <button type="submit" class="btn btn-primary"><a href="{{ (url_for('profileEdit', status=status, username=username)) }}" class="text-white">Редактировать</a></button>
             </div>

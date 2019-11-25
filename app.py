@@ -1,13 +1,10 @@
 from flask import *
 from flask_bootstrap import Bootstrap
-import psycopg2
-from psycopg2 import sql
+
+from functions import *
 
 app = Flask(__name__)
 Bootstrap(app)
-
-conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
-cur = conn.cursor()
 
 try:
     cur.execute("CREATE TABLE if not exists person (user_id serial primary key, login varchar(15) NOT null unique, password TEXT NOT NULL, status TEXT NOT NULL, email TEXT NOT NULL unique, phone TEXT NOT NULL unique);")
@@ -20,42 +17,10 @@ try:
     conn.commit()
     cur.execute("CREATE TABLE if not exists area (area_name text not null primary key);")
     conn.commit()
-    cur.execute("CREATE TABLE if not exists performer (user_id int primary key references person, perfomer_name text NOT null, area_name text NOT null references area, services_descr TEXT NOT NULL);")
+    cur.execute("CREATE TABLE if not exists performer (user_id int primary key references person, performer_name text NOT null, area_name text NOT null references area, services_descr TEXT NOT NULL);")
     conn.commit()
 except Exception as e:
     print(e)
-
-def loadInfoFromProfile(columnname, tablename, name):
-    cur.execute(
-        sql.SQL("SELECT {0} FROM {1} WHERE user_id = (select user_id from person where login = %s)")
-            .format(sql.Identifier(columnname), sql.Identifier(tablename)),[name])
-    result = cur.fetchone()
-    profileData = ''
-    if result is not None:
-        profileData = result[0]
-    conn.commit()
-    return profileData
-
-def loadInfoFromPerson(columnname, name):
-    cur.execute(
-        sql.SQL("SELECT {} FROM person WHERE user_id = (select user_id from person where login = %s)")
-            .format(sql.Identifier(columnname)), [name])
-    result = cur.fetchone()
-    profileData = ''
-    if result is not None:
-        profileData = result[0]
-    conn.commit()
-    return profileData
-
-def userExist(tablename, id):
-    cur.execute(sql.SQL("SELECT user_id FROM {} WHERE user_id = %s").format(sql.Identifier(tablename)), [id])
-    result = cur.fetchone()
-    if result is not None:
-        item = 1
-    else:
-        item = 0
-    conn.commit()
-    return item
 
 @app.route('/')
 def index():
@@ -181,7 +146,8 @@ def profile(status, username):
     if status == 'performer':
         # загружаем имя
         performerName = loadInfoFromProfile('performer_name', 'performer', username)
-
+        # загружаем сферу деятельности
+        performerArea = loadInfoFromProfile('area_name', 'performer', username)
         # загружаем описание услуг
         servicesDescr = loadInfoFromProfile('services_descr', 'performer', username)
         # загружаем телефон
@@ -189,7 +155,7 @@ def profile(status, username):
         # загружаем email
         performerEmail = loadInfoFromPerson('email', username)
         return render_template("profile.html", status=status, username=username, performerName=performerName, servicesDescr=servicesDescr,
-                               performerPhone=performerPhone, performerEmail=performerEmail)
+                               performerArea=performerArea, performerPhone=performerPhone, performerEmail=performerEmail)
 
 # страница редактирования профиля
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
@@ -227,10 +193,10 @@ def profileEdit(status, username):
                 conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным ИНН, телефоном или email уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным ИНН, телефоном или email уже существует!', status=status, username=username)
             except psycopg2.errors.StringDataRightTruncation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='ИНН должен состоять не более чем из 10 символов!')
+                return render_template("profile_edit.html", message='ИНН должен состоять не более чем из 10 символов!', status=status, username=username)
             return redirect(url_for('profile', status=status, username=username))
 
     if status == 'employee':
@@ -256,7 +222,7 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username)
             return redirect(url_for('profile', status=status, username=username))
 
     if status == 'customer':
@@ -282,12 +248,15 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username)
             return redirect(url_for('profile', status=status, username=username))
 
     if status == 'performer':
+        areas = areasLoad()
+
         if request.method == 'POST':
             performerName = request.form.get('performer_name')
+            performerArea = request.form.get('performer_area')
             servicesDescr = request.form.get('services_descr')
             performerPhone = request.form.get('performer_phone')
             performerEmail = request.form.get('performer_email')
@@ -296,12 +265,16 @@ def profileEdit(status, username):
 
             try:
                 if isPerformer == 0:
-                    if performerName == '' or performerPhone == '' or performerEmail == '':
-                        return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                    cur.execute("insert into performer (user_id, performer_name, servicesDescr) values (%s, %s, %s)", (userID, performerName, servicesDescr, ))
+                    if performerName == '' or performerPhone == '' or performerEmail == '' or performerArea == '':
+                        return render_template("profile_edit.html", message='Пожайлуста, заполните все поля', status=status, username=username, areas=areas)
+                    cur.execute("insert into performer (user_id, performer_name, area_name, services_descr) values (%s, %s, %s, %s)", (userID, performerName, performerArea, servicesDescr, ))
                 else:
                     if performerName != '':
                         cur.execute('update performer set performer_name = %s WHERE user_id = %s', (performerName, userID, ))
+                    if performerArea != '':
+                        cur.execute('update performer set area_name = %s WHERE user_id = %s', (performerArea, userID, ))
+                    if servicesDescr != '':
+                        cur.execute('update performer set services_descr = %s WHERE user_id = %s', (servicesDescr, userID, ))
                     if performerPhone != '':
                         cur.execute('update person set phone = %s WHERE user_id = %s', (performerPhone, userID,))
                     if performerEmail != '':
@@ -309,8 +282,9 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!')
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, areas=areas)
             return redirect(url_for('profile', status=status, username=username))
+        return render_template("profile_edit.html", status=status, username=username, areas=areas)
     return render_template("profile_edit.html", status=status, username=username)
 
 # панель администратора
@@ -336,10 +310,7 @@ def adminDataAreas():
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
-    cur.execute("select * from area")
-    result = cur.fetchall()
-    result_new = list(sum(result, ()))
-    conn.commit()
+    areas = areasLoad()
 
     if request.method == 'POST':
         area = request.form.get('area')
@@ -352,7 +323,7 @@ def adminDataAreasAdd():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!')
-    return render_template("admin_data_areas_add.html", areas=result_new)
+    return render_template("admin_data_areas_add.html", areas=areas)
 
 # изменение
 @app.route('/admin_data_areas_edit', methods=['GET', 'POST'])
