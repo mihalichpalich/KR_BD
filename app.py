@@ -1,9 +1,14 @@
 from flask import *
 from flask_bootstrap import Bootstrap
 
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from functions import *
+from forms import *
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'root'
 Bootstrap(app)
 
 createDatabase()
@@ -15,29 +20,32 @@ def index():
 # регистрация
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signUp():
-    if request.method == 'POST':
-        login = request.form.get('username')
-        password = request.form.get('password')
-        status = request.form.get('status')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
+    form = SignUpForm()
 
-        if login == '' or password == '' or email == '' or phone == '':
-            return render_template("sign_up.html", message='Пожайлуста, заполните все поля')
-        elif status == '':
-            return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
+    login = request.form.get('username')
+    password = request.form.get('password')
+    status = request.form.get('status')
+    email = request.form.get('email')
+    phone = request.form.get('phone')
 
-        try:
-            cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, password, status, email, phone))
-            conn.commit()
-            return redirect(url_for('success'))
-        except psycopg2.errors.UniqueViolation:
-            conn.rollback()
-            return render_template("sign_up.html", message='Пользователь с данным логином, email или телефоном уже существует!')
-        except psycopg2.errors.StringDataRightTruncation:
-            conn.rollback()
-            return render_template("sign_up.html", message='Логин должен состоять не более чем из 15 символов!')
-    return render_template("sign_up.html")
+
+
+    # if login == '' or password == '' or email == '' or phone == '':
+    #     return render_template("sign_up.html", message='Пожайлуста, заполните все поля')
+    # elif status == '':
+    #     return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
+
+    try:
+        cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, password, status, email, phone))
+        conn.commit()
+        return redirect(url_for('success'))
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        return render_template("sign_up.html", message='Пользователь с данным логином, email или телефоном уже существует!')
+    except psycopg2.errors.StringDataRightTruncation:
+        conn.rollback()
+        return render_template("sign_up.html", message='Логин должен состоять не более чем из 15 символов!')
+    return render_template("sign_up.html", form=form)
 
 # успешная регистрация
 # убрать метод get когда все будет готово

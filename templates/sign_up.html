@@ -7,6 +7,8 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('signUp') }}" method="POST">
+                    {{ form.csrf_token }}
+
                     <div class="form-group">
                         <label for="login">Login</label>
                         <input type="text" name="username" class="form-control" id="login" placeholder="Login">
