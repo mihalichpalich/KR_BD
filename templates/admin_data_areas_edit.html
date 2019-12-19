@@ -26,6 +26,10 @@
                     <p class="text-danger">{{ message }}</p>
                 {% endif %}
 
+                <div class="row justify-content-center">
+                    <a href="{{ url_for('adminDataIP') }}">Назад</a><br>
+                </div>
+
                 <ul class="list-group">
                     {% for item in areas %}
                         <li class="list-group-item">{{ item }}</li>

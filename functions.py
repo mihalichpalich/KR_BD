@@ -27,7 +27,7 @@ def createDatabase():
         conn.commit()
         cur.execute("CREATE TABLE if not exists profession (profession_name text not null primary key);")
         conn.commit()
-        cur.execute("CREATE TABLE if not exists industry_profession (industry_name text not null, profession_name text not null, foreign key (industry_name) references industry, foreign key (profession_name) references profession);")
+        cur.execute("CREATE TABLE if not exists industry_profession (industry_name text not null, profession_name text not null, foreign key (industry_name) references industry on update cascade, foreign key (profession_name) references profession);")
         conn.commit()
     except Exception as e:
         print(e)
@@ -65,7 +65,7 @@ def userExist(tablename, id):
     return item
 
 def selectColumn(columnname, tablename):
-    cur.execute(sql.SQL("SELECT {0} FROM {1}").format(sql.Identifier(columnname), sql.Identifier(tablename)))
+    cur.execute(sql.SQL("SELECT {0} FROM {1} group by {2}").format(sql.Identifier(columnname), sql.Identifier(tablename), sql.Identifier(columnname)))
     result = cur.fetchall()
     result_new = list(sum(result, ()))
     conn.commit()

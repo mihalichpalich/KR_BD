@@ -1,12 +1,9 @@
 from flask import *
 from flask_bootstrap import Bootstrap
-# from werkzeug.security import generate_password_hash, check_password_hash
 
 from functions import *
-from forms import *
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'root'
 Bootstrap(app)
 
 createDatabase()
@@ -18,14 +15,17 @@ def index():
 # регистрация
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signUp():
-    form = SignUpForm()
+    if request.method == 'POST':
+        login = request.form.get('username')
+        password = request.form.get('password')
+        status = request.form.get('status')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
 
-    if form.validate_on_submit():
-        login = form.login.data
-        password = form.password.data
-        status = form.status.data
-        email = form.email.data
-        phone = form.phone.data
+        if login == '' or password == '' or email == '' or phone == '':
+            return render_template("sign_up.html", message='Пожайлуста, заполните все поля')
+        elif status == '':
+            return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
 
         try:
             cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, password, status, email, phone))
@@ -34,10 +34,10 @@ def signUp():
         except psycopg2.errors.UniqueViolation:
             conn.rollback()
             return render_template("sign_up.html", message='Пользователь с данным логином, email или телефоном уже существует!')
-        # except psycopg2.errors.StringDataRightTruncation:
-        #     conn.rollback()
-        #     return render_template("sign_up.html", message='Логин должен состоять не более чем из 15 символов!')
-    return render_template("sign_up.html", form=form)
+        except psycopg2.errors.StringDataRightTruncation:
+            conn.rollback()
+            return render_template("sign_up.html", message='Логин должен состоять не более чем из 15 символов!')
+    return render_template("sign_up.html")
 
 # успешная регистрация
 # убрать метод get когда все будет готово
@@ -317,9 +317,27 @@ def adminDataIPAdd():
     return render_template("admin_data_ip_add.html", industries=industries, professions=professions)
 
 # изменение
-@app.route('/admin_data_ip_edit')
-def adminDataIPEdit():
-    return render_template("admin_data_ip_edit.html")
+@app.route('/admin_data_ind_edit', methods=['GET', 'POST'])
+def adminDataIndEdit():
+    industries = selectColumn('industry_name', 'industry_profession')
+
+    if request.method == 'POST':
+        industryOld = request.form.get('old_industry')
+        industryNew = request.form.get('new_industry')
+
+        if industryOld == '' or industryNew == '':
+            return render_template("admin_data_ind_edit.html", message='Введите название отрасли!')
+        else:
+            try:
+                cur.execute("update industry set industry_name = %s WHERE industry_name = %s",
+                            (industryNew, industryOld))
+                conn.commit()
+                return redirect(url_for('adminDataIndEdit'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_ind_edit.html",
+                                       message='Данная отрасль уже существует!')
+    return render_template("admin_data_ind_edit.html", industries=industries)
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
 @app.route('/admin_data_areas')
