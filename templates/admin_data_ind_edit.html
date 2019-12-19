@@ -1,0 +1,53 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Изменить отрасли{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <form action="{{ url_for('adminDataIndEdit') }}" method="POST">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="login">Введите название отрасли:</label>
+                                <input type="text" name="old_industry" class="form-control" id="old_industry">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="login">Введите новое название отрасли:</label>
+                                <input type="text" name="new_industry" class="form-control" id="new_industry">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-lg-3">
+                            <div class="row justify-content-end form-group">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">Изменить</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <a href="{{ url_for('adminDataIP') }}">Назад</a><br>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <ul class="list-group">
+                    {% for item1 in industries %}
+                        <li class="list-group-item">{{ item1 }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}
