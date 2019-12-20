@@ -1,0 +1,110 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Добавление записи{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-8">
+                <form action="{{ url_for('createItem', status=status, username=username) }}" method="POST">
+                    {% if status == 'company' %}
+
+                        <div class="row justify-content-center">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="industry_name">Выберите отрасль*:</label>
+                                    <select class="custom-select" id="inputGroupSelect01" name="industry_name">
+                                        <option selected value="" disabled></option>
+
+                                        {% for item in industries %}
+                                            <option value="{{ item }}">{{ item }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="profession_name">Выберите должность*: </label>
+                                    <select class="custom-select" id="inputGroupSelect02" name="profession_name">
+                                        <option selected value="" disabled></option>
+
+                                        {% for item in professions %}
+                                            <option value="{{ item }}">{{ item }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="employee_sex">Выберите пол соискателя: </label>
+                            <select class="custom-select" id="inputGroupSelect03" name="employee_sex">
+                                <option selected value="" disabled></option>
+                                <option value="мужчина">мужчина</option>
+                                <option value="женщина">женщина</option>
+                            </select>
+                        </div>
+
+                        <div class="row justify-content-center">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="min_emp_age">Минимальный возраст соискателя (числом)*:</label>
+                                    <input type="text" name="min_emp_age" class="form-control" id="min_emp_age">
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="max_emp_age">Максимальный возраст соискателя (числом):</label>
+                                    <input type="text" name="max_emp_age" class="form-control" id="max_emp_age">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="min_salary">Минимальная заработная плата (числом)*:</label>
+                            <input type="text" name="min_salary" class="form-control" id="min_salary">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="min_exp">Минимальный опыт работы (числом)*:</label>
+                            <input type="text" name="min_exp" class="form-control" id="min_exp">
+                        </div>
+
+                        <select class="custom-select" id="inputGroupSelect04" name="emp_type">
+                            <option selected value="" disabled>Выберите тип занятости*: </option>
+                            <option value="полная">полная</option>
+                            <option value="частичная">частичная</option>
+                            <option value="вахта">вахта</option>
+                            <option value="удаленная работа">удаленная работа</option>
+                            <option value="стажировка">стажировка</option>
+                        </select>
+                    {% endif %}
+
+                    {% if status == 'employee' %}
+
+                    {% endif %}
+
+                    {% if status == 'customer' %}
+
+                    {% endif %}
+
+                    {% if status == 'performer' %}
+
+                    {% endif %}
+
+                    <div class="row justify-content-end form-group">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Опубликовать</button>
+                    </div>
+                </form>
+
+                <p>Поля, отмеченные * должны быть заполнены обязательно</p>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

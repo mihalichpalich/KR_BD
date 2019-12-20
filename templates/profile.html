@@ -13,9 +13,16 @@
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Мои вакансии</a>
-                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">Добавить вакансию</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Мои вакансии</a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="#">Каталог резюме</a>
                     </li>
@@ -27,9 +34,16 @@
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Мои резюме</a>
-                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Добавить резюме</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Мои резюме</a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="#">Каталог вакансий</a>
                     </li>
@@ -41,9 +55,16 @@
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Мои заказы</a>
-                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Добавить задание</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Мои задания</a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="#">Каталог исполнителей</a>
                     </li>
@@ -83,7 +104,7 @@
                 {% endif %}
 
                 {% if status == 'customer' %}
-                    <p><strong>ФИО: </strong>{{ customerName }}</p>
+                    <p><strong>Имя: </strong>{{ customerName }}</p>
                     <p><strong>Телефон: </strong>{{ customerPhone }}</p>
                     <p><strong>e-mail: </strong>{{ customerEmail }}</p>
                 {% endif %}
@@ -95,7 +116,20 @@
                     <p><strong>Телефон: </strong>{{ performerPhone }}</p>
                     <p><strong>e-mail: </strong>{{ performerEmail }}</p>
                 {% endif %}
+
                 <button type="submit" class="btn btn-primary"><a href="{{ (url_for('profileEdit', status=status, username=username)) }}" class="text-white">Редактировать</a></button>
+
+                {% if warning %}
+                    {% if status == 'company' %}
+                        <p class="text-danger">Заполните информацию о компании полностью, чтобы размещать и просматривать свои вакансии</p>
+                    {% elif status == 'employer' %}
+                        <p class="text-danger">Введите свое ФИО, чтобы размещать и просматривать свои резюме</p>
+                    {% elif status == 'customer' %}
+                        <p class="text-danger">Введите свое имя, чтобы размещать и просматривать свои задания</p>
+                    {% elif status == 'performer' %}
+                        <p class="text-danger">Заполните информацию о себе полностью, чтобы иметь возможность получать предложения от заказчиков</p>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>

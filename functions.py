@@ -29,6 +29,8 @@ def createDatabase():
         conn.commit()
         cur.execute("CREATE TABLE if not exists industry_profession (industry_name text not null, profession_name text not null, foreign key (industry_name) references industry on update cascade, foreign key (profession_name) references profession);")
         conn.commit()
+        cur.execute("CREATE TABLE if not exists vacancy (vacancy_id serial primary key, user_id int references person, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, employee_sex text, min_emp_age int not null, max_emp_age int, min_salary int not null, min_exp int not null, emp_type text not null, vac_pub_data text not null);")
+        conn.commit()
     except Exception as e:
         print(e)
 

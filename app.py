@@ -120,6 +120,8 @@ def pwRecSuc():
 @app.route('/profile/<status>/<username>', methods=['GET', 'POST'])
 def profile(status, username):
     if g.user:
+        warning = ''
+
         if status == 'company':
             # загружаем инн
             inn = loadInfoFromProfile('inn', 'company', username)
@@ -129,7 +131,11 @@ def profile(status, username):
             companyPhone = loadInfoFromPerson('phone', username)
             # загружаем email
             companyEmail = loadInfoFromPerson('email', username)
-            return render_template("profile.html", status=status, username=username, inn=inn, companyName=companyName, companyPhone=companyPhone, companyEmail=companyEmail)
+
+            if inn == '' or companyName == '':
+                warning = True
+            return render_template("profile.html", status=status, username=username, inn=inn, companyName=companyName,
+                                   companyPhone=companyPhone, companyEmail=companyEmail, warning=warning)
 
         if status == 'employee':
             # загружаем фио
@@ -138,8 +144,11 @@ def profile(status, username):
             employeePhone = loadInfoFromPerson('phone', username)
             # загружаем email
             employeeEmail = loadInfoFromPerson('email', username)
+
+            if fullName == '':
+                warning = True
             return render_template("profile.html", status=status, username=username, fullName=fullName,
-                                   employeePhone=employeePhone, employeeEmail=employeeEmail)
+                                   employeePhone=employeePhone, employeeEmail=employeeEmail, warning=warning)
 
         if status == 'customer':
             # загружаем имя
@@ -148,7 +157,11 @@ def profile(status, username):
             customerPhone = loadInfoFromPerson('phone', username)
             # загружаем email
             customerEmail = loadInfoFromPerson('email', username)
-            return render_template("profile.html", status=status, username=username, customerName=customerName, customerPhone=customerPhone, customerEmail=customerEmail)
+
+            if customerName == '':
+                warning = True
+            return render_template("profile.html", status=status, username=username, customerName=customerName,
+                                   customerPhone=customerPhone, customerEmail=customerEmail, warning=warning)
 
         if status == 'performer':
             # загружаем имя
@@ -161,8 +174,13 @@ def profile(status, username):
             performerPhone = loadInfoFromPerson('phone', username)
             # загружаем email
             performerEmail = loadInfoFromPerson('email', username)
-            return render_template("profile.html", status=status, username=username, performerName=performerName, servicesDescr=servicesDescr,
-                                   performerArea=performerArea, performerPhone=performerPhone, performerEmail=performerEmail)
+
+
+            if performerName == '' or performerArea == '' or servicesDescr == '':
+                warning = True
+            return render_template("profile.html", status=status, username=username, performerName=performerName,
+                                   servicesDescr=servicesDescr, performerArea=performerArea, performerPhone=performerPhone,
+                                   performerEmail=performerEmail, warning=warning)
     return render_template("login.html")
 
 # страница редактирования профиля
@@ -187,7 +205,7 @@ def profileEdit(status, username):
 
                 try:
                     if isCompany == 0:
-                        if inn == '' or companyName == '' or companyPhone == '' or companyEmail == '':
+                        if inn == '' or companyName == '':
                             return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
                         cur.execute("insert into company (user_id, inn, company_name) values (%s, %s, %s)", (userID, inn, companyName, ))
                     else:
@@ -218,7 +236,7 @@ def profileEdit(status, username):
 
                 try:
                     if isEmployee == 0:
-                        if fullName == '' or employeePhone == '' or employeeEmail == '':
+                        if fullName == '':
                             return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
                         cur.execute("insert into employee (user_id, full_name) values (%s, %s)", (userID, fullName, ))
                     else:
@@ -244,7 +262,7 @@ def profileEdit(status, username):
 
                 try:
                     if isCustomer == 0:
-                        if customerName == '' or customerPhone == '' or customerEmail == '':
+                        if customerName == '':
                             return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
                         cur.execute("insert into customer (user_id, customer_name) values (%s, %s)", (userID, customerName, ))
                     else:
@@ -274,7 +292,7 @@ def profileEdit(status, username):
 
                 try:
                     if isPerformer == 0:
-                        if performerName == '' or performerPhone == '' or performerEmail == '' or performerArea == '':
+                        if performerName == '' or performerArea == '' or servicesDescr == '':
                             return render_template("profile_edit.html", message='Пожайлуста, заполните все поля', status=status, username=username, areas=areas)
                         cur.execute("insert into performer (user_id, performer_name, area_name, services_descr) values (%s, %s, %s, %s)", (userID, performerName, performerArea, servicesDescr, ))
                     else:
@@ -295,6 +313,58 @@ def profileEdit(status, username):
                 return redirect(url_for('profile', status=status, username=username))
             return render_template("profile_edit.html", status=status, username=username, areas=areas)
     return render_template("profile_edit.html", status=status, username=username)
+
+# добавление записи
+@app.route('/create_item/<status>/<username>', methods=['GET', 'POST'])
+def createItem(status, username):
+    industries = selectColumn('industry_name', 'industry')
+    professions = selectColumn('profession_name', 'profession')
+
+    if g.user:
+        cur.execute('SELECT user_id FROM person WHERE login = %s', (username, ))
+        result = cur.fetchone()
+        userID = ''
+        if result is not None:
+            userID = result[0]
+        conn.commit()
+
+        if status == 'company':
+            if request.method == 'POST':
+                industryName = request.form.get('industry_name')
+                professionName = request.form.get('profession_name')
+                employeeSex = request.form.get('employee_sex')
+                minEmpAge = request.form.get('min_emp_age')
+                maxEmpAge = request.form.get('max_emp_age')
+                minSalary = request.form.get('min_salary')
+                minExp = request.form.get('min_exp')
+                empType = request.form.get('emp_type')
+
+                cur.execute('SELECT CURRENT_DATE')
+                result = cur.fetchone()
+                vacPubData = result[0]
+
+                if maxEmpAge == '':
+                    maxEmpAge = None
+
+                try:
+                    if industryName == '' or professionName == '' or minEmpAge == '' or minSalary == '' or minExp == '' or empType == '':
+                        return render_template("create_item.html", message='Пожайлуста, заполните все поля', status=status, username=username, industries=industries, professions=professions)
+                    else:
+                        cur.execute(
+                            "insert into vacancy (user_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                            (userID, industryName, professionName, employeeSex, minEmpAge,
+                             maxEmpAge, minSalary, minExp, empType, vacPubData))
+                        conn.commit()
+                except psycopg2.errors.InvalidTextRepresentation:
+                    conn.rollback()
+                    return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, industries=industries, professions=professions)
+                return redirect(url_for('itemList', status=status, username=username))
+    return render_template("create_item.html", status=status, username=username, industries=industries, professions=professions)
+
+# список записей
+@app.route('/item_list/<status>/<username>')
+def itemList(status, username):
+    return render_template("item_list.html", status=status, username=username)
 
 # удаление сессии
 @app.route('/dropsession')
