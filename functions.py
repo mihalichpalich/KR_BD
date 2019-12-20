@@ -65,7 +65,7 @@ def userExist(tablename, id):
     return item
 
 def selectColumn(columnname, tablename):
-    cur.execute(sql.SQL("SELECT {0} FROM {1} group by {2}").format(sql.Identifier(columnname), sql.Identifier(tablename), sql.Identifier(columnname)))
+    cur.execute(sql.SQL("SELECT {0} FROM {1}").format(sql.Identifier(columnname), sql.Identifier(tablename)))
     result = cur.fetchall()
     result_new = list(sum(result, ()))
     conn.commit()

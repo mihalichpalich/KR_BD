@@ -1,5 +1,6 @@
 from flask import *
 from flask_bootstrap import Bootstrap
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from functions import *
 
@@ -27,8 +28,10 @@ def signUp():
         elif status == '':
             return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
 
+        passwordHash = generate_password_hash(password)
+
         try:
-            cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, password, status, email, phone))
+            cur.execute("insert into person (login, password, status, email, phone) values (%s, %s, %s, %s, %s)", (login, passwordHash, status, email, phone))
             conn.commit()
             return redirect(url_for('success'))
         except psycopg2.errors.UniqueViolation:
@@ -58,12 +61,18 @@ def login():
         if username == 'admin' and password == 'admin':
             return redirect(url_for('admin'))
 
-        cur.execute('SELECT * FROM person WHERE login = %s and password = %s', (username, password, ))
+        cur.execute('SELECT password FROM person WHERE login = %s', (username, ))
         if cur.rowcount == 0:
-            return render_template("login.html", message='Пользователя с данным логином не существует или указан неверный пароль!')
+            return render_template("login.html", message='Пользователя с данным логином не существует!')
+        result = cur.fetchone()
+        passwordHash = result[0]
         conn.commit()
 
-        cur.execute('SELECT status FROM person WHERE login = %s and password = %s', (username, password, ))
+        result = check_password_hash(passwordHash, password)
+        if not result:
+            return render_template("login.html", message='Введен неправильный пароль!')
+
+        cur.execute('SELECT status FROM person WHERE login = %s and password = %s', (username, passwordHash, ))
         result = cur.fetchone()
         status = result[0]
         conn.commit()
@@ -319,7 +328,7 @@ def adminDataIPAdd():
 # изменение
 @app.route('/admin_data_ind_edit', methods=['GET', 'POST'])
 def adminDataIndEdit():
-    industries = selectColumn('industry_name', 'industry_profession')
+    industries = selectColumn('industry_name', 'industry')
 
     if request.method == 'POST':
         industryOld = request.form.get('old_industry')
