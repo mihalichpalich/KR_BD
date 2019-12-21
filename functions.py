@@ -72,3 +72,12 @@ def selectColumn(columnname, tablename):
     result_new = list(sum(result, ()))
     conn.commit()
     return result_new
+
+def getUserID(name):
+    cur.execute('SELECT user_id FROM person WHERE login = %s', (name,))
+    result = cur.fetchone()
+    ID = ''
+    if result is not None:
+        ID = result[0]
+    conn.commit()
+    return ID

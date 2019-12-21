@@ -187,12 +187,7 @@ def profile(status, username):
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
 def profileEdit(status, username):
     if g.user:
-        cur.execute('SELECT user_id FROM person WHERE login = %s', (username, ))
-        result = cur.fetchone()
-        userID = ''
-        if result is not None:
-            userID = result[0]
-        conn.commit()
+        userID = getUserID(username)
 
         if status == 'company':
             if request.method == 'POST':
@@ -321,12 +316,7 @@ def createItem(status, username):
     professions = selectColumn('profession_name', 'profession')
 
     if g.user:
-        cur.execute('SELECT user_id FROM person WHERE login = %s', (username, ))
-        result = cur.fetchone()
-        userID = ''
-        if result is not None:
-            userID = result[0]
-        conn.commit()
+        userID = getUserID(username)
 
         if status == 'company':
             if request.method == 'POST':
@@ -364,6 +354,11 @@ def createItem(status, username):
 # список записей
 @app.route('/item_list/<status>/<username>')
 def itemList(status, username):
+    if g.user:
+        userID = getUserID(username)
+
+        if status == 'company':
+            cur.execute('SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE login = %s', (username,))
     return render_template("item_list.html", status=status, username=username)
 
 # удаление сессии
