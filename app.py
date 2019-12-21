@@ -358,8 +358,12 @@ def itemList(status, username):
         userID = getUserID(username)
 
         if status == 'company':
-            cur.execute('SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE login = %s', (username,))
-    return render_template("item_list.html", status=status, username=username)
+            cur.execute('SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
+            vacancyInfo = cur.fetchall()
+            conn.commit()
+
+
+    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo)
 
 # удаление сессии
 @app.route('/dropsession')

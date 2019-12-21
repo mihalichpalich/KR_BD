@@ -65,9 +65,33 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-xs-3 align-self-center form-group">
+                {% for item in vacancyInfo %}
+                    <div class="col-xs-6">
+                        <div class="card"">
+                            <div class="card-body">
+                                <p><strong>Отрасль: </strong>{{ item[0] }}</p>
+                                <p><strong>Должность: </strong>{{ item[1] }}</p>
 
-            </div>
+                                {% if item[2] is not none %}
+                                    <p><strong>Пол соискателя: </strong>{{ item[2] }}</p>
+                                {% endif %}
+
+                                <p><strong>Минимальный возраст соискателя: </strong>{{ item[3] }}</p>
+
+                                {% if item[4] is not none %}
+                                    <p><strong>Максимальный возраст соискателя: </strong>{{ item[4] }}</p>
+                                {% endif %}
+
+                                <p><strong>Минимальная заработная плата: </strong>{{ item[5] }}</p>
+                                <p><strong>Минимальный опыт работы: </strong>{{ item[6] }}</p>
+                                <p><strong>Тип занятости: </strong>{{ item[7] }}</p>
+                                <p><strong>Дата публикации: </strong>{{ item[8] }}</p>
+                                <a href="#" class="btn btn-primary">Редактировать</a>
+                                <a href="#" class="btn btn-danger">Удалить</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
         </div>
     </div>
 {%- endblock content %}
