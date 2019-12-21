@@ -358,12 +358,18 @@ def itemList(status, username):
         userID = getUserID(username)
 
         if status == 'company':
-            cur.execute('SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
+            cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
             vacancyInfo = cur.fetchall()
             conn.commit()
-
-
     return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo)
+
+@app.route('/deleteitem/<status>/<username>/<vacancyid>', methods=['POST'])
+def deleteItem(status, username, vacancyid):
+    if g.user:
+        if status == 'company':
+            cur.execute('delete from vacancy where vacancy_id = %s', (vacancyid,))
+            conn.commit()
+    return redirect(url_for('itemList', status=status, username=username))
 
 # удаление сессии
 @app.route('/dropsession')
