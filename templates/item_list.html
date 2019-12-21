@@ -1,10 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <h1>this is item list</h1>
-</body>
-</html>
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Мои записи{% endblock title %}
+
+{%- block content %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ (url_for('profile', status=status, username=username)) }}">
+                        {% if status == 'company' %}
+                            О компании
+                        {% elif status == 'employee' %}
+                            О соискателе
+                        {% elif status == 'customer' %}
+                            О заказчике
+                        {% elif status == 'performer' %}
+                            О исполнителе
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
+                        {% if status == 'company' %}
+                            Добавить вакансию
+                        {% elif status == 'employee' %}
+                            Добавить резюме
+                        {% elif status == 'customer' %}
+                            Добавить задание
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">
+                        {% if status == 'company' %}
+                            Мои вакансии
+                        {% elif status == 'employee' %}
+                            Мои резюме
+                        {% elif status == 'customer' %}
+                            Мои задания
+                        {% endif %}
+                    <span class="sr-only">(current)</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        {% if status == 'company' %}
+                            Каталог резюме
+                        {% elif status == 'employee' %}
+                            Каталог вакансий
+                        {% elif status == 'performer' %}
+                            Каталог заданий
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+
+            <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
+        </div>
+    </div>
+</nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-3 align-self-center form-group">
+
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

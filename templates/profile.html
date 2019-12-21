@@ -7,79 +7,58 @@
     <div class="container">
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ml-auto">
-                {% if status == 'company' %}
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">О компании
-                            <span class="sr-only">(current)</span>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ (url_for('profile', status=status, username=username)) }}">
+                        {% if status == 'company' %}
+                            О компании
+                        {% elif status == 'employee' %}
+                            О соискателе
+                        {% elif status == 'customer' %}
+                            О заказчике
+                        {% elif status == 'performer' %}
+                            О исполнителе
+                        {% endif %}
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+
+                {% if not warning %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
+                            {% if status == 'company' %}
+                                Добавить вакансию
+                            {% elif status == 'employee' %}
+                                Добавить резюме
+                            {% elif status == 'customer' %}
+                                Добавить задание
+                            {% endif %}
                         </a>
                     </li>
 
-                    {% if not warning %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">Добавить вакансию</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Мои вакансии</a>
-                        </li>
-                    {% endif %}
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Каталог резюме</a>
-                    </li>
-                {% endif %}
-
-                {% if status == 'employee' %}
                     <li class="nav-item active">
-                        <a class="nav-link" href="#">О соискателе
-                            <span class="sr-only">(current)</span>
-                        </a>
-                    </li>
-
-                    {% if not warning %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Добавить резюме</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Мои резюме</a>
-                        </li>
-                    {% endif %}
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Каталог вакансий</a>
+                        <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
+                            {% if status == 'company' %}
+                                Мои вакансии
+                            {% elif status == 'employee' %}
+                                Мои резюме
+                            {% elif status == 'customer' %}
+                                Мои задания
+                            {% endif %}
+                        <span class="sr-only">(current)</span></a>
                     </li>
                 {% endif %}
 
-                {% if status == 'customer' %}
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">О заказчике
-                            <span class="sr-only">(current)</span>
-                        </a>
-                    </li>
-
-                    {% if not warning %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Добавить задание</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Мои задания</a>
-                        </li>
-                    {% endif %}
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Каталог исполнителей</a>
-                    </li>
-                {% endif %}
-
-                {% if status == 'performer' %}
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">О исполнителе
-                            <span class="sr-only">(current)</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Каталог заказчиков</a>
-                    </li>
-                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        {% if status == 'company' %}
+                            Каталог резюме
+                        {% elif status == 'employee' %}
+                            Каталог вакансий
+                        {% elif status == 'performer' %}
+                            Каталог заданий
+                        {% endif %}
+                    </a>
+                </li>
             </ul>
 
             <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
