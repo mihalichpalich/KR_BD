@@ -437,6 +437,35 @@ def editItem(status, username, itemid):
                     cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, itemid, ))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
+
+        if status == 'employee':
+            if request.method == 'POST':
+                industryName = request.form.get('industry_name')
+                professionName = request.form.get('profession_name')
+                minSalary = request.form.get('min_salary')
+                maxSalary = request.form.get('max_salary')
+                exp = request.form.get('exp')
+                empType = request.form.get('emp_type')
+
+                if minSalary == '' and maxSalary == '':
+                    render_template("edit_item.html", status=status, username=username, itemid=itemid,
+                                    industries=industries, professions=professions,
+                                    message = 'Уровень заработной платы не задан!')
+
+                if industryName != None:
+                    cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid, ))
+                if professionName != None:
+                    cur.execute('update cv set profession_name = %s WHERE cv_id = %s', (professionName, itemid, ))
+                if minSalary != '':
+                    cur.execute('update cv set min_salary = %s WHERE cv_id = %s', (minSalary, itemid, ))
+                if maxSalary != '':
+                    cur.execute('update cv set max_salary = %s WHERE cv_id = %s', (maxSalary, itemid, ))
+                if exp != '':
+                    cur.execute('update cv set exp = %s WHERE cv_id = %s', (exp, itemid, ))
+                if empType != None:
+                    cur.execute('update cv set emp_type = %s WHERE cv_id = %s', (empType, itemid, ))
+                conn.commit()
+                return redirect(url_for('itemList', status=status, username=username))
     return render_template("edit_item.html", status=status, username=username, itemid=itemid, industries=industries, professions=professions)
 
 # удаление записи

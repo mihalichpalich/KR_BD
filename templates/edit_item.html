@@ -6,7 +6,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6">
-                <form action="{{ url_for('editItem', status=status, username=username, vacancyid=vacancyid) }}" method="POST">
+                <form action="{{ url_for('editItem', status=status, username=username, itemid=itemid) }}" method="POST">
                     {% if status == 'company' %}
                         <div class="row justify-content-center">
                             <div class="col-sm-6">
@@ -85,7 +85,60 @@
                     {% endif %}
 
                     {% if status == 'employee' %}
+                        <div class="row justify-content-center">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="industry_name">Выберите отрасль:</label>
+                                    <select class="custom-select" id="inputGroupSelect01" name="industry_name">
+                                        <option selected value="" disabled></option>
 
+                                        {% for item in industries %}
+                                            <option value="{{ item }}">{{ item }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="profession_name">Выберите должность: </label>
+                                    <select class="custom-select" id="inputGroupSelect02" name="profession_name">
+                                        <option selected value="" disabled></option>
+
+                                        {% for item in professions %}
+                                            <option value="{{ item }}">{{ item }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="min_salary">Заработная плата от (числом):</label>
+                            <input type="text" name="min_salary" class="form-control" id="min_salary">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="min_salary">Заработная плата до (числом):</label>
+                            <input type="text" name="max_salary" class="form-control" id="max_salary">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="min_exp">Опыт работы (числом):</label>
+                            <input type="text" name="exp" class="form-control" id="exp">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emp_type">Выберите тип занятости: </label>
+                            <select class="custom-select" id="inputGroupSelect04" name="emp_type">
+                                <option selected value="" disabled></option>
+                                <option value="полная">полная</option>
+                                <option value="частичная">частичная</option>
+                                <option value="вахта">вахта</option>
+                                <option value="удаленная работа">удаленная работа</option>
+                                <option value="стажировка">стажировка</option>
+                            </select>
+                        </div>
                     {% endif %}
 
                     {% if status == 'customer' %}
