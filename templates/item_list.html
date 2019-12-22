@@ -65,39 +65,74 @@
 
     <div class="container">
         <div class="row">
-                {% for item in vacancyInfo %}
-                    <div class="col-lg-5">
-                        <div class="card"">
-                            <div class="card-body">
-                                <p><strong>Отрасль: </strong>{{ item[1] }}</p>
-                                <p><strong>Должность: </strong>{{ item[2] }}</p>
+                {% if status == 'company' %}
+                    {% for item in vacancyInfo %}
+                        <div class="col-lg-5">
+                            <div class="card"">
+                                <div class="card-body">
+                                    <p><strong>Отрасль: </strong>{{ item[1] }}</p>
+                                    <p><strong>Должность: </strong>{{ item[2] }}</p>
 
-                                {% if item[3] is not none %}
-                                    <p><strong>Пол соискателя: </strong>{{ item[3] }}</p>
-                                {% endif %}
+                                    {% if item[3] is not none %}
+                                        <p><strong>Пол соискателя: </strong>{{ item[3] }}</p>
+                                    {% endif %}
 
-                                <p><strong>Минимальный возраст соискателя: </strong>{{ item[4] }}</p>
+                                    <p><strong>Минимальный возраст соискателя: </strong>{{ item[4] }}</p>
 
-                                {% if item[5] is not none %}
-                                    <p><strong>Максимальный возраст соискателя: </strong>{{ item[5] }}</p>
-                                {% endif %}
+                                    {% if item[5] is not none %}
+                                        <p><strong>Максимальный возраст соискателя: </strong>{{ item[5] }}</p>
+                                    {% endif %}
 
-                                <p><strong>Минимальная заработная плата: </strong>{{ item[6] }} руб.</p>
-                                <p><strong>Минимальный опыт работы: </strong>{{ item[7] }}</p>
-                                <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
-                                <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
+                                    <p><strong>Минимальная заработная плата: </strong>{{ item[6] }} руб.</p>
+                                    <p><strong>Минимальный опыт работы (лет): </strong>{{ item[7] }}</p>
+                                    <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
+                                    <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
 
-                                <form action="{{ url_for('editItem', status=status, username=username, vacancyid=item[0]) }}" method="GET">
-                                    <button type="submit" class="btn btn-primary">Редактировать</button>
-                                </form>
+                                    <form action="{{ url_for('editItem', status=status, username=username, itemid=item[0]) }}" method="GET">
+                                        <button type="submit" class="btn btn-primary">Редактировать</button>
+                                    </form>
 
-                                <form action="{{ url_for('deleteItem', status=status, username=username, vacancyid=item[0]) }}" method="POST">
-                                    <button type="submit" class="btn btn-danger">Удалить</button>
-                                </form>
+                                    <form action="{{ url_for('deleteItem', status=status, username=username, itemid=item[0]) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if status == 'employee' %}
+                    {% for item in cvInfo %}
+                        <div class="col-lg-5">
+                            <div class="card"">
+                                <div class="card-body">
+                                    <p><strong>Отрасль: </strong>{{ item[1] }}</p>
+                                    <p><strong>Должность: </strong>{{ item[2] }}</p>
+
+                                    {% if item[3] is not none %}
+                                        <p><strong>Заработная плата от: </strong>{{ item[3] }}</p>
+                                    {% endif %}
+
+                                    {% if item[4] is not none %}
+                                        <p><strong>Заработная плата до: </strong>{{ item[4] }}</p>
+                                    {% endif %}
+
+                                    <p><strong>Опыт работы (лет): </strong>{{ item[5] }}</p>
+                                    <p><strong>Тип занятости: </strong>{{ item[6] }}</p>
+                                    <p class="font-weight-bold text-secondary">Просмотры: </p>
+
+                                    <form action="{{ url_for('editItem', status=status, username=username, itemid=item[0]) }}" method="GET">
+                                        <button type="submit" class="btn btn-primary">Редактировать</button>
+                                    </form>
+
+                                    <form action="{{ url_for('deleteItem', status=status, username=username, itemid=item[0]) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
         </div>
     </div>
 {%- endblock content %}

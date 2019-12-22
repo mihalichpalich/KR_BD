@@ -349,6 +349,41 @@ def createItem(status, username):
                     conn.rollback()
                     return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, industries=industries, professions=professions)
                 return redirect(url_for('itemList', status=status, username=username))
+
+        if status == 'employee':
+            if request.method == 'POST':
+                industryName = request.form.get('industry_name')
+                professionName = request.form.get('profession_name')
+                minSalary = request.form.get('min_salary')
+                maxSalary = request.form.get('max_salary')
+                exp = request.form.get('exp')
+                empType = request.form.get('emp_type')
+
+                cur.execute('SELECT CURRENT_DATE')
+                result = cur.fetchone()
+                cvPubData = result[0]
+
+                if minSalary == '':
+                    minSalary = None
+                elif maxSalary == '':
+                    maxSalary = None
+
+                try:
+                    if industryName == '' or professionName == '' or exp == '' or empType == '':
+                        return render_template("create_item.html", message='Пожайлуста, заполните все поля',
+                                           status=status, username=username, industries=industries,
+                                           professions=professions)
+                    else:
+                        cur.execute(
+                        "insert into cv (user_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+                        (userID, industryName, professionName, minSalary, maxSalary, exp, empType, cvPubData))
+                        conn.commit()
+                except psycopg2.errors.InvalidTextRepresentation:
+                    conn.rollback()
+                    return render_template("create_item.html", message='В численные поля записан текст!',
+                                           status=status, username=username, industries=industries,
+                                           professions=professions)
+                return redirect(url_for('itemList', status=status, username=username))
     return render_template("create_item.html", status=status, username=username, industries=industries, professions=professions)
 
 # список записей
@@ -357,15 +392,18 @@ def itemList(status, username):
     if g.user:
         userID = getUserID(username)
 
-        if status == 'company':
-            cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
-            vacancyInfo = cur.fetchall()
-            conn.commit()
-    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo)
+        cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
+        vacancyInfo = cur.fetchall()
+        conn.commit()
+
+        cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE user_id = %s', (userID,))
+        cvInfo = cur.fetchall()
+        conn.commit()
+    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo)
 
 # изменение записи
-@app.route('/edititem/<status>/<username>/<vacancyid>', methods=['GET', 'POST'])
-def editItem(status, username, vacancyid):
+@app.route('/edititem/<status>/<username>/<itemid>', methods=['GET', 'POST'])
+def editItem(status, username, itemid):
     industries = selectColumn('industry_name', 'industry')
     professions = selectColumn('profession_name', 'profession')
 
@@ -382,31 +420,31 @@ def editItem(status, username, vacancyid):
                 empType = request.form.get('emp_type')
 
                 if industryName != None:
-                    cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, vacancyid, ))
+                    cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, itemid, ))
                 if professionName != None:
-                    cur.execute('update vacancy set profession_name = %s WHERE vacancy_id = %s', (professionName, vacancyid, ))
+                    cur.execute('update vacancy set profession_name = %s WHERE vacancy_id = %s', (professionName, itemid, ))
                 if employeeSex != None:
-                    cur.execute('update vacancy set employee_sex = %s WHERE vacancy_id = %s', (employeeSex, vacancyid, ))
+                    cur.execute('update vacancy set employee_sex = %s WHERE vacancy_id = %s', (employeeSex, itemid, ))
                 if minEmpAge != '':
-                    cur.execute('update vacancy set min_emp_age = %s WHERE vacancy_id = %s', (minEmpAge, vacancyid, ))
+                    cur.execute('update vacancy set min_emp_age = %s WHERE vacancy_id = %s', (minEmpAge, itemid, ))
                 if maxEmpAge != '':
-                    cur.execute('update vacancy set max_emp_age = %s WHERE vacancy_id = %s', (maxEmpAge, vacancyid, ))
+                    cur.execute('update vacancy set max_emp_age = %s WHERE vacancy_id = %s', (maxEmpAge, itemid, ))
                 if minSalary != '':
-                    cur.execute('update vacancy set min_salary = %s WHERE vacancy_id = %s', (minSalary, vacancyid, ))
+                    cur.execute('update vacancy set min_salary = %s WHERE vacancy_id = %s', (minSalary, itemid, ))
                 if minExp != '':
-                    cur.execute('update vacancy set min_exp = %s WHERE vacancy_id = %s', (minExp, vacancyid, ))
+                    cur.execute('update vacancy set min_exp = %s WHERE vacancy_id = %s', (minExp, itemid, ))
                 if empType != None:
-                    cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, vacancyid, ))
+                    cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, itemid, ))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("edit_item.html", status=status, username=username, vacancyid=vacancyid, industries=industries, professions=professions)
+    return render_template("edit_item.html", status=status, username=username, itemid=itemid, industries=industries, professions=professions)
 
 # удаление записи
-@app.route('/deleteitem/<status>/<username>/<vacancyid>', methods=['POST'])
-def deleteItem(status, username, vacancyid):
+@app.route('/deleteitem/<status>/<username>/<itemid>', methods=['POST'])
+def deleteItem(status, username, itemid):
     if g.user:
         if status == 'company':
-            cur.execute('delete from vacancy where vacancy_id = %s', (vacancyid,))
+            cur.execute('delete from vacancy where vacancy_id = %s', (itemid,))
             conn.commit()
     return redirect(url_for('itemList', status=status, username=username))
 
