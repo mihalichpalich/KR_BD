@@ -447,11 +447,6 @@ def editItem(status, username, itemid):
                 exp = request.form.get('exp')
                 empType = request.form.get('emp_type')
 
-                if minSalary == '' and maxSalary == '':
-                    render_template("edit_item.html", status=status, username=username, itemid=itemid,
-                                    industries=industries, professions=professions,
-                                    message = 'Уровень заработной платы не задан!')
-
                 if industryName != None:
                     cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid, ))
                 if professionName != None:
@@ -598,6 +593,28 @@ def adminDataAreasEdit():
                 conn.rollback()
                 return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!')
     return render_template("admin_data_areas_edit.html", areas=areas)
+
+# АДМИНКА, УДАЛЕНИЕ
+# удаление резюме
+@app.route('/admin_delete_cv', methods=['GET', 'POST'])
+def adminDeleteCv():
+    if request.method == 'POST':
+        day = request.form.get('day')
+        month = request.form.get('month')
+        year = request.form.get('year')
+
+        try:
+            dayNum = int(day)
+            monthNum = int(month)
+            yearNum = int(year)
+        except ValueError:
+            return render_template("admin_delete_cv.html", message="Введено не целочисленное значение!")
+
+        date = '%d-%d-%d' % (yearNum, monthNum, dayNum)
+
+        cur.execute('delete from cv where cv_pub_data::date < %s::date', (date,))
+        conn.commit()
+    return render_template("admin_delete_cv.html")
 
 @app.route('/vacancy_cat')
 def vacancyCat():
