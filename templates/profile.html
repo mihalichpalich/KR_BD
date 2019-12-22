@@ -49,15 +49,9 @@
                 {% endif %}
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        {% if status == 'company' %}
-                            Каталог резюме
-                        {% elif status == 'employee' %}
-                            Каталог вакансий
-                        {% elif status == 'performer' %}
-                            Каталог заданий
-                        {% endif %}
-                    </a>
+                    {% if status == 'company' %}
+                       <a class="nav-link" href="{{ (url_for('cvCat', username=username)) }}">Каталог резюме</a>
+                    {% endif %}
                 </li>
             </ul>
 

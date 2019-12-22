@@ -476,6 +476,33 @@ def deleteItem(status, username, itemid):
             conn.commit()
     return redirect(url_for('itemList', status=status, username=username))
 
+# каталог резюме
+@app.route('/cv_cat/<username>')
+def cvCat(username):
+    if g.user:
+        counts = []
+
+        cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from cv)')
+        industries = cur.fetchall()
+        conn.commit()
+
+        industries = list(sum(industries, ()))
+
+        for item in industries:
+            cur.execute('SELECT count(*) FROM cv WHERE industry_name = %s', (item,))
+            count = cur.fetchone()
+            counts.append(count)
+            conn.commit()
+
+        counts = list(sum(counts, ()))
+
+        data = list(zip(industries, counts))
+    return render_template("cv_cat.html", username=username, data=data)
+
+@app.route('/cv_cat/<username>/<industry>')
+def cvCatInd(username, industry):
+    return render_template("cv_cat.html", username=username, industry=industry)
+
 # удаление сессии
 @app.route('/dropsession')
 def dropsession():
@@ -642,10 +669,6 @@ def vacancyCat():
     vacancies = ["Engineer", "Programmist", "Cleaner"]
     return render_template("vacancy_cat.html", vacancies=vacancies)
 
-@app.route('/cv_cat')
-@app.route('/cv_cat/<username>')
-def CVCat(username=None):
-    return render_template("cv_cat.html", user=username)
 
 if __name__ == '__main__':
     app.run(debug=True)
