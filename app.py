@@ -616,6 +616,27 @@ def adminDeleteCv():
         conn.commit()
     return render_template("admin_delete_cv.html")
 
+# удаление вакансий
+@app.route('/admin_delete_vacancy', methods=['GET', 'POST'])
+def adminDeleteVacancy():
+    if request.method == 'POST':
+        day = request.form.get('day')
+        month = request.form.get('month')
+        year = request.form.get('year')
+
+        try:
+            dayNum = int(day)
+            monthNum = int(month)
+            yearNum = int(year)
+        except ValueError:
+            return render_template("admin_delete_vacancy.html", message="Введено не целочисленное значение!")
+
+        date = '%d-%d-%d' % (yearNum, monthNum, dayNum)
+
+        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (date,))
+        conn.commit()
+    return render_template("admin_delete_vacancy.html")
+
 @app.route('/vacancy_cat')
 def vacancyCat():
     vacancies = ["Engineer", "Programmist", "Cleaner"]
