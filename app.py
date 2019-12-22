@@ -476,13 +476,14 @@ def deleteItem(status, username, itemid):
             conn.commit()
     return redirect(url_for('itemList', status=status, username=username))
 
-# каталог резюме
-@app.route('/cv_cat/<username>')
-def cvCat(username):
+# КАТАЛОГ РЕЗЮМЕ
+# отрасли
+@app.route('/cv_cat_ind/<username>')
+def cvCatInd(username):
     if g.user:
         counts = []
 
-        cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from cv)')
+        cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from cv) group by industry_name')
         industries = cur.fetchall()
         conn.commit()
 
@@ -497,11 +498,39 @@ def cvCat(username):
         counts = list(sum(counts, ()))
 
         data = list(zip(industries, counts))
-    return render_template("cv_cat.html", username=username, data=data)
+    return render_template("cv_cat_ind.html", username=username, data=data)
 
-@app.route('/cv_cat/<username>/<industry>')
-def cvCatInd(username, industry):
-    return render_template("cv_cat.html", username=username, industry=industry)
+# должности
+@app.route('/cv_cat_pro/<username>/<industry>')
+def cvCatPro(username, industry):
+    if g.user:
+        counts = []
+
+        cur.execute('SELECT profession_name FROM industry_profession WHERE industry_name = %s group by profession_name', (industry,))
+        professions = cur.fetchall()
+        conn.commit()
+
+        professions = list(sum(professions, ()))
+
+        for item in professions:
+            cur.execute('SELECT count(*) FROM cv WHERE profession_name = %s', (item,))
+            count = cur.fetchone()
+            counts.append(count)
+            conn.commit()
+
+        counts = list(sum(counts, ()))
+
+        data = list(zip(professions, counts))
+    return render_template("cv_cat_pro.html", username=username, data=data, industry=industry)
+
+# список резюме
+@app.route('/cv_cat/<username>/<industry>/<profession>')
+def cvCat(username, industry, profession):
+    if g.user:
+        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
+        cvInfo = cur.fetchall()
+        conn.commit()
+    return render_template("cv_cat.html", username=username, cvInfo=cvInfo)
 
 # удаление сессии
 @app.route('/dropsession')
