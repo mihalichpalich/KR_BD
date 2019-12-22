@@ -446,6 +446,10 @@ def deleteItem(status, username, itemid):
         if status == 'company':
             cur.execute('delete from vacancy where vacancy_id = %s', (itemid,))
             conn.commit()
+
+        if status == 'employee':
+            cur.execute('delete from cv where cv_id = %s', (itemid,))
+            conn.commit()
     return redirect(url_for('itemList', status=status, username=username))
 
 # удаление сессии
