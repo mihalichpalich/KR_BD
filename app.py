@@ -363,6 +363,45 @@ def itemList(status, username):
             conn.commit()
     return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo)
 
+# изменение записи
+@app.route('/edititem/<status>/<username>/<vacancyid>', methods=['GET', 'POST'])
+def editItem(status, username, vacancyid):
+    industries = selectColumn('industry_name', 'industry')
+    professions = selectColumn('profession_name', 'profession')
+
+    if g.user:
+        if status == 'company':
+            if request.method == 'POST':
+                industryName = request.form.get('industry_name')
+                professionName = request.form.get('profession_name')
+                employeeSex = request.form.get('employee_sex')
+                minEmpAge = request.form.get('min_emp_age')
+                maxEmpAge = request.form.get('max_emp_age')
+                minSalary = request.form.get('min_salary')
+                minExp = request.form.get('min_exp')
+                empType = request.form.get('emp_type')
+
+                if industryName != None:
+                    cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, vacancyid, ))
+                if professionName != None:
+                    cur.execute('update vacancy set profession_name = %s WHERE vacancy_id = %s', (professionName, vacancyid, ))
+                if employeeSex != None:
+                    cur.execute('update vacancy set employee_sex = %s WHERE vacancy_id = %s', (employeeSex, vacancyid, ))
+                if minEmpAge != '':
+                    cur.execute('update vacancy set min_emp_age = %s WHERE vacancy_id = %s', (minEmpAge, vacancyid, ))
+                if maxEmpAge != '':
+                    cur.execute('update vacancy set max_emp_age = %s WHERE vacancy_id = %s', (maxEmpAge, vacancyid, ))
+                if minSalary != '':
+                    cur.execute('update vacancy set min_salary = %s WHERE vacancy_id = %s', (minSalary, vacancyid, ))
+                if minExp != '':
+                    cur.execute('update vacancy set min_exp = %s WHERE vacancy_id = %s', (minExp, vacancyid, ))
+                if empType != None:
+                    cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, vacancyid, ))
+                conn.commit()
+                return redirect(url_for('itemList', status=status, username=username))
+    return render_template("edit_item.html", status=status, username=username, vacancyid=vacancyid, industries=industries, professions=professions)
+
+# удаление записи
 @app.route('/deleteitem/<status>/<username>/<vacancyid>', methods=['POST'])
 def deleteItem(status, username, vacancyid):
     if g.user:

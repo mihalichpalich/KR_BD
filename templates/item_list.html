@@ -86,7 +86,10 @@
                                 <p><strong>Минимальный опыт работы: </strong>{{ item[7] }}</p>
                                 <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
                                 <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
-                                <a href="#" class="btn btn-primary">Редактировать</a>
+
+                                <form action="{{ url_for('editItem', status=status, username=username, vacancyid=item[0]) }}" method="GET">
+                                    <button type="submit" class="btn btn-primary">Редактировать</button>
+                                </form>
 
                                 <form action="{{ url_for('deleteItem', status=status, username=username, vacancyid=item[0]) }}" method="POST">
                                     <button type="submit" class="btn btn-danger">Удалить</button>
