@@ -390,6 +390,8 @@ def createItem(status, username):
 @app.route('/item_list/<status>/<username>')
 def itemList(status, username):
     if g.user:
+        viewsCount = []
+
         userID = getUserID(username)
 
         cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE user_id = %s', (userID,))
@@ -399,6 +401,19 @@ def itemList(status, username):
         cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE user_id = %s', (userID,))
         cvInfo = cur.fetchall()
         conn.commit()
+
+        cur.execute('SELECT cv_id FROM cv WHERE user_id = %s', (userID,))
+        cvIDs = cur.fetchall()
+        cvIDs = list(sum(cvIDs, ()))
+        conn.commit()
+
+        for item in cvIDs:
+            cur.execute('SELECT count(*) FROM browsing WHERE cv_id in (select cv_id from cv where user_id = %s)', (item,))
+            result = cur.fetchone()
+            viewsCount.append(result[0])
+            conn.commit()
+
+        print(cvInfo)
     return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo)
 
 # изменение записи
@@ -524,13 +539,41 @@ def cvCatPro(username, industry):
     return render_template("cv_cat_pro.html", username=username, data=data, industry=industry)
 
 # список резюме
-@app.route('/cv_cat/<username>/<industry>/<profession>')
-def cvCat(username, industry, profession):
+@app.route('/cv_cat_list/<username>/<industry>/<profession>')
+def cvCatList(username, industry, profession):
+    userID = getUserID(username)
+
     if g.user:
         cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         cvInfo = cur.fetchall()
         conn.commit()
-    return render_template("cv_cat.html", username=username, cvInfo=cvInfo)
+    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industry=industry, profession=profession)
+
+# резюме полностью
+@app.route('/cv_cat_item/<industry>/<profession>/<userid>/<itemid>')
+def cvCatItem(userid, itemid, industry, profession):
+    if g.user:
+        cur.execute('SELECT CURRENT_DATE')
+        data = cur.fetchone()
+
+        cur.execute("insert into browsing (user_id, cv_id, view_data) values (%s, %s, %s)", (userid, itemid, data))
+        conn.commit()
+
+        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
+        result = cur.fetchall()
+        cvInfo = list(sum(result , ()))
+        conn.commit()
+
+        cur.execute('SELECT full_name FROM employee WHERE user_id = (select user_id from cv where cv_id = %s)', (itemid,))
+        result = cur.fetchone()
+        fullName = result[0]
+        conn.commit()
+
+        cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from cv where cv_id = %s)', (itemid,))
+        result = cur.fetchall()
+        contacts = list(sum(result , ()))
+        conn.commit()
+    return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts)
 
 # удаление сессии
 @app.route('/dropsession')
@@ -697,7 +740,6 @@ def adminDeleteVacancy():
 def vacancyCat():
     vacancies = ["Engineer", "Programmist", "Cleaner"]
     return render_template("vacancy_cat.html", vacancies=vacancies)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,42 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог резюме{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог резюме</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>Отрасль: </strong>{{ cvInfo[1] }}</p>
+                        <p><strong>Должность: </strong>{{ cvInfo[2] }}</p>
+
+                        {% if cvInfo[3] is not none %}
+                            <p><strong>Заработная плата от: </strong>{{ cvInfo[3] }}</p>
+                        {% endif %}
+
+                        {% if cvInfo[4] is not none %}
+                            <p><strong>Заработная плата до: </strong>{{ cvInfo[4] }}</p>
+                        {% endif %}
+
+                        <p><strong>Опыт работы (лет): </strong>{{ cvInfo[5] }}</p>
+                        <p><strong>Тип занятости: </strong>{{ cvInfo[6] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>ФИО: </strong>{{ fullName }}</p>
+                        <p><strong>email: </strong>{{ contacts[0] }}</p>
+                        <p><strong>Телефон: </strong>{{ contacts[1] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

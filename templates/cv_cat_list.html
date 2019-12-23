@@ -1,0 +1,38 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог резюме{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог резюме</h1>
+        </div>
+        <div class="row">
+            {% for item in cvInfo %}
+                <div class="col-lg-5">
+                    <div class="card"">
+                        <div class="card-body">
+                            <p><strong>Отрасль: </strong>{{ item[1] }}</p>
+                            <p><strong>Должность: </strong>{{ item[2] }}</p>
+
+                            {% if item[3] is not none %}
+                                <p><strong>Заработная плата от: </strong>{{ item[3] }}</p>
+                            {% endif %}
+
+                            {% if item[4] is not none %}
+                                <p><strong>Заработная плата до: </strong>{{ item[4] }}</p>
+                            {% endif %}
+
+                            <p><strong>Опыт работы (лет): </strong>{{ item[5] }}</p>
+                            <p><strong>Тип занятости: </strong>{{ item[6] }}</p>
+
+                            <form action="{{ url_for('cvCatItem', itemid=item[0], userid=userid, industry=industry, profession=profession) }}" method="GET">
+                                <button type="submit" class="btn btn-primary">Смотреть далее</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{%- endblock content %}
