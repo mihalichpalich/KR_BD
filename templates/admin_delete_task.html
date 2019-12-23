@@ -1,0 +1,36 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Удаление заданий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xs-3">
+                <p>Удаление заданий с истекшей датой выполнения</p>
+                <p>Введите дату в формате ЧЧ.ММ.ГГГГ</p>
+
+                <form action="{{ url_for('adminDeleteTask') }}" class="form-inline" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="day" class="form-control" id="day" placeholder="ЧЧ">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="month" class="form-control" id="month" placeholder="ММ">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="year" class="form-control" id="year" placeholder="ГГГГ">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Удалить</button>
+                </form>
+
+                <a href="{{ url_for('admin') }}">Назад</a><br>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{%- endblock content %}
