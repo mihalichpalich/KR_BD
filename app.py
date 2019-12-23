@@ -22,6 +22,10 @@ def before_request():
 def index():
     return render_template("index.html")
 
+@app.route('/guest_mode')
+def guestMode():
+    return render_template("guest_mode.html")
+
 # регистрация
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signUp():
@@ -546,7 +550,7 @@ def cvCatList(username, industry, profession):
     userID = getUserID(username)
 
     if g.user:
-        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
+        cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         cvInfo = cur.fetchall()
         conn.commit()
     return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industry=industry, profession=profession)
@@ -576,6 +580,78 @@ def cvCatItem(userid, itemid, industry, profession):
         contacts = list(sum(result , ()))
         conn.commit()
     return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts)
+
+# КАТАЛОГ ВАКАНСИЙ
+# отрасли
+@app.route('/vacancy_cat_ind/')
+def vacCatInd():
+    counts = []
+
+    cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from vacancy) group by industry_name')
+    industries = cur.fetchall()
+    conn.commit()
+
+    industries = list(sum(industries, ()))
+
+    for item in industries:
+        cur.execute('SELECT count(*) FROM vacancy WHERE industry_name = %s', (item,))
+        count = cur.fetchone()
+        counts.append(count)
+        conn.commit()
+
+    counts = list(sum(counts, ()))
+
+    data = list(zip(industries, counts))
+    return render_template("vacancy_cat_ind.html", data=data)
+
+# должности
+@app.route('/vacancy_cat_pro/<industry>')
+def vacCatPro(industry):
+    counts = []
+
+    cur.execute('SELECT profession_name FROM industry_profession WHERE industry_name = %s group by profession_name', (industry,))
+    professions = cur.fetchall()
+    conn.commit()
+
+    professions = list(sum(professions, ()))
+
+    for item in professions:
+        cur.execute('SELECT count(*) FROM vacancy WHERE profession_name = %s', (item,))
+        count = cur.fetchone()
+        counts.append(count)
+        conn.commit()
+
+    counts = list(sum(counts, ()))
+
+    data = list(zip(professions, counts))
+    return render_template("vacancy_cat_pro.html", data=data, industry=industry)
+
+# список вакансий
+@app.route('/vacancy_cat_list/<industry>/<profession>')
+def vacCatList(industry, profession):
+    cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE industry_name = %s and profession_name = %s', (industry, profession))
+    vacancyInfo = cur.fetchall()
+    conn.commit()
+    return render_template("vacancy_cat_list.html", vacancyInfo=vacancyInfo, industry=industry, profession=profession)
+
+# вакансия полностью
+@app.route('/vacancy_cat_item/<industry>/<profession>/<itemid>')
+def vacCatItem(itemid, industry, profession):
+    cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE industry_name = %s and profession_name = %s', (industry, profession))
+    result = cur.fetchall()
+    vacancyInfo = list(sum(result , ()))
+    conn.commit()
+
+    cur.execute('SELECT company_name FROM company WHERE user_id = (select user_id from vacancy where vacancy_id = %s)', (itemid,))
+    result = cur.fetchone()
+    companyName = result[0]
+    conn.commit()
+
+    cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from vacancy where vacancy_id = %s)', (itemid,))
+    result = cur.fetchall()
+    contacts = list(sum(result , ()))
+    conn.commit()
+    return render_template("vacancy_cat_item.html", itemid=itemid, vacancyInfo=vacancyInfo, companyName=companyName, contacts=contacts)
 
 # удаление сессии
 @app.route('/dropsession')

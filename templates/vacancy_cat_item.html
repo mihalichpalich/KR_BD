@@ -1,0 +1,46 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог вакансий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог вакансий</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>Отрасль: </strong>{{ vacancyInfo[1] }}</p>
+                        <p><strong>Должность: </strong>{{ vacancyInfo[2] }}</p>
+
+                        {% if vacancyInfo[3] is not none %}
+                            <p><strong>Пол соискателя: </strong>{{ vacancyInfo[3] }}</p>
+                        {% endif %}
+
+                        <p><strong>Минимальный возраст соискателя: </strong>{{ vacancyInfo[4] }}</p>
+
+                        {% if vacancyInfo[5] is not none %}
+                            <p><strong>Максимальный возраст соискателя: </strong>{{ item[5] }}</p>
+                        {% endif %}
+
+                        <p><strong>Минимальная заработная плата: </strong>{{ vacancyInfo[6] }} руб.</p>
+                        <p><strong>Минимальный опыт работы (лет): </strong>{{ vacancyInfo[7] }}</p>
+                        <p><strong>Тип занятости: </strong>{{ vacancyInfo[8] }}</p>
+                        <p><strong>Дата публикации: </strong>{{ vacancyInfo[9] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>Название фирмы: </strong>{{ companyName }}</p>
+                        <p><strong>email: </strong>{{ contacts[0] }}</p>
+                        <p><strong>Телефон: </strong>{{ contacts[1] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

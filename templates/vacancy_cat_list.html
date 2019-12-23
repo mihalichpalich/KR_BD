@@ -1,0 +1,42 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог вакансий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог вакансий</h1>
+        </div>
+        <div class="row">
+            {% for item in vacancyInfo %}
+                <div class="col-lg-5">
+                    <div class="card"">
+                        <div class="card-body">
+                            <p><strong>Отрасль: </strong>{{ item[1] }}</p>
+                            <p><strong>Должность: </strong>{{ item[2] }}</p>
+
+                            {% if item[3] is not none %}
+                                <p><strong>Пол соискателя: </strong>{{ item[3] }}</p>
+                            {% endif %}
+
+                            <p><strong>Минимальный возраст соискателя: </strong>{{ item[4] }}</p>
+
+                            {% if item[5] is not none %}
+                                <p><strong>Максимальный возраст соискателя: </strong>{{ item[5] }}</p>
+                            {% endif %}
+
+                            <p><strong>Минимальная заработная плата: </strong>{{ item[6] }} руб.</p>
+                            <p><strong>Минимальный опыт работы (лет): </strong>{{ item[7] }}</p>
+                            <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
+                            <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
+
+                            <form action="{{ url_for('vacCatItem', itemid=item[0], industry=industry, profession=profession) }}" method="GET">
+                                <button type="submit" class="btn btn-primary">Смотреть далее</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{%- endblock content %}

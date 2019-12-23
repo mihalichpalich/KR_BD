@@ -1,0 +1,18 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог вакансий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог вакансий</h1>
+        </div>
+        {% for item in data %}
+            <div class="row">
+                <div class="col-xs-3">
+                    <p><a href="{{ url_for('vacCatPro', industry=item[0]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{%- endblock content %}

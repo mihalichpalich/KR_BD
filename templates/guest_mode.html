@@ -1,0 +1,16 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Выберите каталог{% endblock title %}
+
+{%- block content %}
+    {{super()}}
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="btn-group-vertical col-xs-3">
+          <button type="button" class="btn btn-light"><a href="{{ url_for('vacCatInd') }}"><h1>Каталог вакансий</h1></a></button>
+          <button type="button" class="btn btn-light"><a href="#"><h1>Каталог заданий</h1></a></button>
+        </div>
+      </div>
+    </div>
+{%- endblock content %}
