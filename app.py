@@ -400,6 +400,7 @@ def itemList(status, username):
 
         cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE user_id = %s', (userID,))
         cvInfo = cur.fetchall()
+        cvInfo = [list(elem) for elem in cvInfo]
         conn.commit()
 
         cur.execute('SELECT cv_id FROM cv WHERE user_id = %s', (userID,))
@@ -408,12 +409,13 @@ def itemList(status, username):
         conn.commit()
 
         for item in cvIDs:
-            cur.execute('SELECT count(*) FROM browsing WHERE cv_id in (select cv_id from cv where user_id = %s)', (item,))
+            cur.execute('SELECT count(*) FROM browsing WHERE cv_id = (select cv_id from cv where cv_id = %s)', (item,))
             result = cur.fetchone()
             viewsCount.append(result[0])
             conn.commit()
 
-        print(cvInfo)
+        for f, b in list(zip(cvInfo, viewsCount)):
+            f.append(b)
     return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo)
 
 # изменение записи
