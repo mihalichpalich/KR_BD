@@ -139,11 +139,42 @@
                     {% endif %}
 
                     {% if status == 'customer' %}
+                        <div class="form-group">
+                            <label for="area_name">Выберите сферу деятельности*:</label>
+                            <select class="custom-select" id="inputGroupSelect01" name="area_name">
+                                <option selected value="" disabled></option>
 
-                    {% endif %}
+                                {% for item in areas %}
+                                    <option value="{{ item }}">{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                    {% if status == 'performer' %}
+                        <div class="form-group">
+                            <label for="task_descr">Опишите задание*:</label>
+                            <input type="text" name="task_descr" class="form-control" id="task_descr">
+                        </div>
 
+                        <p>Введите дату выполнения задания в формате ЧЧ.ММ.ГГГГ*</p>
+
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <input type="text" name="day" class="form-control" id="day" placeholder="ЧЧ">
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" name="month" class="form-control" id="month" placeholder="ММ">
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" name="year" class="form-control" id="year" placeholder="ГГГГ">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="price">Стоимость выполнения (числом, в рублях)*:</label>
+                            <input type="text" name="price" class="form-control" id="price">
+                        </div>
                     {% endif %}
 
                     <div class="row justify-content-end form-group">

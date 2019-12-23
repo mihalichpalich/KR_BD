@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 from flask import *
 from flask_bootstrap import Bootstrap
@@ -318,6 +319,7 @@ def profileEdit(status, username):
 def createItem(status, username):
     industries = selectColumn('industry_name', 'industry')
     professions = selectColumn('profession_name', 'profession')
+    areas = selectColumn('area_name', 'area')
 
     if g.user:
         userID = getUserID(username)
@@ -333,9 +335,7 @@ def createItem(status, username):
                 minExp = request.form.get('min_exp')
                 empType = request.form.get('emp_type')
 
-                cur.execute('SELECT CURRENT_DATE')
-                result = cur.fetchone()
-                vacPubData = result[0]
+                vacPubData = date.today()
 
                 if maxEmpAge == '':
                     maxEmpAge = None
@@ -363,9 +363,7 @@ def createItem(status, username):
                 exp = request.form.get('exp')
                 empType = request.form.get('emp_type')
 
-                cur.execute('SELECT CURRENT_DATE')
-                result = cur.fetchone()
-                cvPubData = result[0]
+                cvPubData = date.today()
 
                 if minSalary == '':
                     minSalary = None
@@ -388,7 +386,46 @@ def createItem(status, username):
                                            status=status, username=username, industries=industries,
                                            professions=professions)
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("create_item.html", status=status, username=username, industries=industries, professions=professions)
+
+        if status == 'customer':
+            if request.method == 'POST':
+                areaName = request.form.get('area_name')
+                taskDescr = request.form.get('task_descr')
+                day = request.form.get('day')
+                month = request.form.get('month')
+                year = request.form.get('year')
+                price = request.form.get('price')
+
+                try:
+                    dayNum = int(day)
+                    monthNum = int(month)
+                    yearNum = int(year)
+                except ValueError:
+                    return render_template("create_item.html", message='Дата выполнения заполнена неправильно!',
+                                           status=status, username=username, areas=areas)
+
+                execDate = date(yearNum, monthNum, dayNum)
+                today = date.today()
+
+                if execDate < today:
+                    return render_template("create_item.html", message='Дата выполнения не может быть раньше сегодняшней',
+                                           status=status, username=username, areas=areas)
+
+                try:
+                    if areaName == '' or taskDescr == '' or execDate == '' or price == '':
+                        return render_template("create_item.html", message='Пожайлуста, заполните все поля',
+                                               status=status, username=username, areas=areas)
+                    else:
+                        cur.execute(
+                            "insert into task (user_id, area_name, task_descr, exec_date, price) values (%s, %s, %s, %s, %s)",
+                            (userID, areaName, taskDescr, execDate, price))
+                        conn.commit()
+                except psycopg2.errors.InvalidTextRepresentation:
+                    conn.rollback()
+                    return render_template("create_item.html", message='В численные поля записан текст!',
+                                           status=status, username=username, areas=areas)
+                return redirect(url_for('itemList', status=status, username=username))
+    return render_template("create_item.html", status=status, username=username, industries=industries, professions=professions, areas=areas)
 
 # список записей
 @app.route('/item_list/<status>/<username>')
@@ -420,13 +457,18 @@ def itemList(status, username):
 
         for f, b in list(zip(cvInfo, viewsCount)):
             f.append(b)
-    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo)
+
+        cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE user_id = %s', (userID,))
+        taskInfo = cur.fetchall()
+        conn.commit()
+    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo, taskInfo=taskInfo)
 
 # изменение записи
 @app.route('/edititem/<status>/<username>/<itemid>', methods=['GET', 'POST'])
 def editItem(status, username, itemid):
     industries = selectColumn('industry_name', 'industry')
     professions = selectColumn('profession_name', 'profession')
+    areas = selectColumn('area_name', 'area')
 
     if g.user:
         if status == 'company':
@@ -441,21 +483,22 @@ def editItem(status, username, itemid):
                 empType = request.form.get('emp_type')
 
                 if industryName != None:
-                    cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, itemid, ))
+                    cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, itemid,))
                 if professionName != None:
-                    cur.execute('update vacancy set profession_name = %s WHERE vacancy_id = %s', (professionName, itemid, ))
+                    cur.execute('update vacancy set profession_name = %s WHERE vacancy_id = %s',
+                                (professionName, itemid,))
                 if employeeSex != None:
-                    cur.execute('update vacancy set employee_sex = %s WHERE vacancy_id = %s', (employeeSex, itemid, ))
+                    cur.execute('update vacancy set employee_sex = %s WHERE vacancy_id = %s', (employeeSex, itemid,))
                 if minEmpAge != '':
-                    cur.execute('update vacancy set min_emp_age = %s WHERE vacancy_id = %s', (minEmpAge, itemid, ))
+                    cur.execute('update vacancy set min_emp_age = %s WHERE vacancy_id = %s', (minEmpAge, itemid,))
                 if maxEmpAge != '':
-                    cur.execute('update vacancy set max_emp_age = %s WHERE vacancy_id = %s', (maxEmpAge, itemid, ))
+                    cur.execute('update vacancy set max_emp_age = %s WHERE vacancy_id = %s', (maxEmpAge, itemid,))
                 if minSalary != '':
-                    cur.execute('update vacancy set min_salary = %s WHERE vacancy_id = %s', (minSalary, itemid, ))
+                    cur.execute('update vacancy set min_salary = %s WHERE vacancy_id = %s', (minSalary, itemid,))
                 if minExp != '':
-                    cur.execute('update vacancy set min_exp = %s WHERE vacancy_id = %s', (minExp, itemid, ))
+                    cur.execute('update vacancy set min_exp = %s WHERE vacancy_id = %s', (minExp, itemid,))
                 if empType != None:
-                    cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, itemid, ))
+                    cur.execute('update vacancy set emp_type = %s WHERE vacancy_id = %s', (empType, itemid,))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
 
@@ -469,20 +512,56 @@ def editItem(status, username, itemid):
                 empType = request.form.get('emp_type')
 
                 if industryName != None:
-                    cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid, ))
+                    cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid,))
                 if professionName != None:
-                    cur.execute('update cv set profession_name = %s WHERE cv_id = %s', (professionName, itemid, ))
+                    cur.execute('update cv set profession_name = %s WHERE cv_id = %s', (professionName, itemid,))
                 if minSalary != '':
-                    cur.execute('update cv set min_salary = %s WHERE cv_id = %s', (minSalary, itemid, ))
+                    cur.execute('update cv set min_salary = %s WHERE cv_id = %s', (minSalary, itemid,))
                 if maxSalary != '':
-                    cur.execute('update cv set max_salary = %s WHERE cv_id = %s', (maxSalary, itemid, ))
+                    cur.execute('update cv set max_salary = %s WHERE cv_id = %s', (maxSalary, itemid,))
                 if exp != '':
-                    cur.execute('update cv set exp = %s WHERE cv_id = %s', (exp, itemid, ))
+                    cur.execute('update cv set exp = %s WHERE cv_id = %s', (exp, itemid,))
                 if empType != None:
-                    cur.execute('update cv set emp_type = %s WHERE cv_id = %s', (empType, itemid, ))
+                    cur.execute('update cv set emp_type = %s WHERE cv_id = %s', (empType, itemid,))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("edit_item.html", status=status, username=username, itemid=itemid, industries=industries, professions=professions)
+
+        if status == 'customer':
+            if request.method == 'POST':
+                areaName = request.form.get('area_name')
+                taskDescr = request.form.get('task_descr')
+                day = request.form.get('day')
+                month = request.form.get('month')
+                year = request.form.get('year')
+                price = request.form.get('price')
+
+                if areaName != None:
+                    cur.execute('update task set area_name = %s WHERE task_id = %s', (areaName, itemid,))
+                if taskDescr != '':
+                    cur.execute('update task set task_descr = %s WHERE task_id = %s', (taskDescr, itemid,))
+                if day != '' or month != '' or year != '':
+                    try:
+                        dayNum = int(day)
+                        monthNum = int(month)
+                        yearNum = int(year)
+                    except ValueError:
+                        return render_template("create_item.html", message='Дата выполнения заполнена неправильно!',
+                                               status=status, username=username, areas=areas)
+
+                    execDate = date(yearNum, monthNum, dayNum)
+                    today = date.today()
+
+                    if execDate < today:
+                        return render_template("create_item.html",
+                                               message='Дата выполнения не может быть раньше сегодняшней',
+                                               status=status, username=username, areas=areas)
+
+                    cur.execute('update task set exec_date = %s WHERE task_id = %s', (execDate, itemid,))
+                if price != '':
+                    cur.execute('update task set price = %s WHERE task_id = %s', (price, itemid,))
+                conn.commit()
+                return redirect(url_for('itemList', status=status, username=username))
+    return render_template("edit_item.html", status=status, username=username, itemid=itemid, industries=industries, professions=professions, areas=areas)
 
 # удаление записи
 @app.route('/deleteitem/<status>/<username>/<itemid>', methods=['POST'])
@@ -559,8 +638,7 @@ def cvCatList(username, industry, profession):
 @app.route('/cv_cat_item/<industry>/<profession>/<userid>/<itemid>')
 def cvCatItem(userid, itemid, industry, profession):
     if g.user:
-        cur.execute('SELECT CURRENT_DATE')
-        data = cur.fetchone()
+        data = date.today()
 
         cur.execute("insert into browsing (user_id, cv_id, view_data) values (%s, %s, %s)", (userid, itemid, data))
         conn.commit()
@@ -787,9 +865,9 @@ def adminDeleteCv():
         except ValueError:
             return render_template("admin_delete_cv.html", message="Введено не целочисленное значение!")
 
-        date = '%d-%d-%d' % (yearNum, monthNum, dayNum)
+        dateInput = date(yearNum, monthNum, dayNum)
 
-        cur.execute('delete from cv where cv_pub_data::date < %s::date', (date,))
+        cur.execute('delete from cv where cv_pub_data::date < %s::date', (dateInput,))
         conn.commit()
     return render_template("admin_delete_cv.html")
 
@@ -808,9 +886,9 @@ def adminDeleteVacancy():
         except ValueError:
             return render_template("admin_delete_vacancy.html", message="Введено не целочисленное значение!")
 
-        date = '%d-%d-%d' % (yearNum, monthNum, dayNum)
+        dateInput = date(yearNum, monthNum, dayNum)
 
-        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (date,))
+        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (dateInput,))
         conn.commit()
     return render_template("admin_delete_vacancy.html")
 

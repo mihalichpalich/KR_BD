@@ -37,6 +37,9 @@ def createDatabase():
         cur.execute(
             "CREATE TABLE if not exists browsing (user_id int not null, cv_id int not null, view_data text not null, foreign key (user_id) references company, foreign key (cv_id) references cv);")
         conn.commit()
+        cur.execute(
+            "CREATE TABLE if not exists task (task_id serial primary key, user_id int references person, area_name text not null references area on update cascade, task_descr text not null, exec_date text not null, price int not null);")
+        conn.commit()
     except Exception as e:
         print(e)
 

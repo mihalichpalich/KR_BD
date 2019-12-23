@@ -134,6 +134,29 @@
                         </div>
                     {% endfor %}
                 {% endif %}
+
+                {% if status == 'customer' %}
+                    {% for item in taskInfo %}
+                        <div class="col-lg-5">
+                            <div class="card"">
+                                <div class="card-body">
+                                    <p><strong>Сфера деятельности: </strong>{{ item[1] }}</p>
+                                    <p><strong>Описание задания: </strong>{{ item[2] }}</p>
+                                    <p><strong>Дата выполнения задания: </strong>{{ item[3] }}</p>
+                                    <p><strong>Стоимость выполнения: </strong>{{ item[6] }} руб.</p>
+
+                                    <form action="{{ url_for('editItem', status=status, username=username, itemid=item[0]) }}" method="GET">
+                                        <button type="submit" class="btn btn-primary">Редактировать</button>
+                                    </form>
+
+                                    <form action="{{ url_for('deleteItem', status=status, username=username, itemid=item[0]) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
         </div>
     </div>
 {%- endblock content %}
