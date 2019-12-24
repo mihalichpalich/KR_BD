@@ -1,0 +1,28 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог исполнителей{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог исполнителей</h1>
+        </div>
+        <div class="row">
+            {% for item in perfInfo %}
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <p><strong>Имя: </strong>{{ item[1] }}</p>
+                            <p><strong>Сфера деятельности: </strong>{{ item[2] }}</p>
+                            <p><strong>Описание услуг: </strong>{{ item[3] }}</p>
+
+                            <form action="{{ url_for('perfCatItem', itemid=item[0], area=area, username=username) }}" method="GET">
+                                <button type="submit" class="btn btn-primary">Смотреть далее</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{%- endblock content %}

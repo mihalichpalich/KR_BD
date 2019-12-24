@@ -6,11 +6,12 @@
     {{super()}}
 
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="btn-group-vertical col-xs-3">
-          <button type="button" class="btn btn-light"><a href="{{ url_for('adminDataAreasAdd') }}"><h1>Добавить сферу деятельности</h1></a></button>
-          <button type="button" class="btn btn-light"><a href="{{ url_for('adminDataAreasEdit') }}"><h1>Изменить сферу деятельности</h1></a></button>
+        <div class="row justify-content-center">
+            <div class="btn-group-vertical col-xs-3">
+                <button type="button" class="btn btn-light"><a href="{{ url_for('adminDataAreasAdd') }}"><h1>Добавить сферу деятельности</h1></a></button>
+                <button type="button" class="btn btn-light"><a href="{{ url_for('adminDataAreasEdit') }}"><h1>Изменить сферу деятельности</h1></a></button>
+                <a href="{{ url_for('admin') }}">В меню администратора</a>
+            </div>
         </div>
-      </div>
     </div>
 {%- endblock content %}

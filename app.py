@@ -574,6 +574,10 @@ def deleteItem(status, username, itemid):
         if status == 'employee':
             cur.execute('delete from cv where cv_id = %s', (itemid,))
             conn.commit()
+
+        if status == 'customer':
+            cur.execute('delete from task where task_id = %s', (itemid,))
+            conn.commit()
     return redirect(url_for('itemList', status=status, username=username))
 
 # КАТАЛОГ РЕЗЮМЕ
@@ -780,6 +784,52 @@ def taskCatItem(itemid):
     contacts = list(sum(result , ()))
     conn.commit()
     return render_template("task_cat_item.html", taskInfo=taskInfo, customerName=customerName, contacts=contacts)
+
+# КАТАЛОГ ИСПОЛНИТЕЛЕЙ
+# сферы деятельности
+@app.route('/perf_cat_areas/<username>')
+def perfCatAreas(username):
+    if g.user:
+        counts = []
+
+        cur.execute('SELECT area_name FROM area WHERE area_name in (select area_name from performer)')
+        areas = cur.fetchall()
+        conn.commit()
+
+        areas = list(sum(areas, ()))
+
+        for item in areas:
+            cur.execute('SELECT count(*) FROM performer WHERE area_name = %s', (item,))
+            count = cur.fetchone()
+            counts.append(count)
+            conn.commit()
+
+        counts = list(sum(counts, ()))
+
+        data = list(zip(areas, counts))
+    return render_template("perf_cat_areas.html", username=username, data=data)
+
+# список исполнителей
+@app.route('/perf_cat_list/<username>/<area>')
+def perfCatList(username, area):
+    cur.execute('SELECT * FROM performer WHERE area_name = %s', (area,))
+    perfInfo = cur.fetchall()
+    conn.commit()
+    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, area=area)
+
+# исполнитель полностью
+@app.route('/perf_cat_item/<username>/<itemid>')
+def perfCatItem(username, itemid):
+    cur.execute('SELECT * FROM performer WHERE user_id = %s', (itemid,))
+    result = cur.fetchall()
+    perfInfo = list(sum(result , ()))
+    conn.commit()
+
+    cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from performer where user_id = %s)', (itemid,))
+    result = cur.fetchall()
+    contacts = list(sum(result , ()))
+    conn.commit()
+    return render_template("perf_cat_item.html", username=username, perfInfo=perfInfo, contacts=contacts)
 
 # удаление сессии
 @app.route('/dropsession')

@@ -56,7 +56,7 @@
                        <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
                     {% endif %}
                     {% if status == 'customer' %}
-                       <a class="nav-link" href="#">Каталог исполнителей</a>
+                       <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
                     {% endif %}
                     {% if status == 'performer' %}
                        <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>

@@ -1,0 +1,31 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог исполнителей{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог исполнителей</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>Имя: </strong>{{ perfInfo[1] }}</p>
+                        <p><strong>Сфера деятельности: </strong>{{ perfInfo[2] }}</p>
+                        <p><strong>Описание услуг: </strong>{{ perfInfo[3] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>email: </strong>{{ contacts[0] }}</p>
+                        <p><strong>Телефон: </strong>{{ contacts[1] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}
