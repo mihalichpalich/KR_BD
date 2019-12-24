@@ -34,7 +34,7 @@
                 </li>
 
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
                         {% if status == 'company' %}
                             Мои вакансии
                         {% elif status == 'employee' %}
@@ -46,15 +46,18 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        {% if status == 'company' %}
-                            Каталог резюме
-                        {% elif status == 'employee' %}
-                            Каталог вакансий
-                        {% elif status == 'performer' %}
-                            Каталог заданий
-                        {% endif %}
-                    </a>
+                    {% if status == 'company' %}
+                       <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
+                    {% endif %}
+                    {% if status == 'employee' %}
+                       <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
+                    {% endif %}
+                    {% if status == 'customer' %}
+                       <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
+                    {% endif %}
+                    {% if status == 'performer' %}
+                       <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
+                    {% endif %}
                 </li>
             </ul>
 

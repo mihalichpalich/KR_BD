@@ -647,9 +647,9 @@ def cvCatItem(userid, itemid, industry, profession):
         cur.execute("insert into browsing (user_id, cv_id, view_data) values (%s, %s, %s)", (userid, itemid, data))
         conn.commit()
 
-        cur.execute('SELECT * FROM cv WHERE user_id = %s', (itemid))
+        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         result = cur.fetchall()
-        cvInfo = list(sum(result , ()))
+        cvInfo = list(sum(result, ()))
         conn.commit()
 
         cur.execute('SELECT full_name FROM employee WHERE user_id = (select user_id from cv where cv_id = %s)', (itemid,))

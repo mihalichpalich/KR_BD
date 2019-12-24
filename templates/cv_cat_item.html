@@ -11,19 +11,19 @@
             <div class="col-lg-5">
                 <div class="card"">
                     <div class="card-body">
-                        <p><strong>Отрасль: </strong>{{ cvInfo[1] }}</p>
-                        <p><strong>Должность: </strong>{{ cvInfo[2] }}</p>
-
-                        {% if cvInfo[3] is not none %}
-                            <p><strong>Заработная плата от: </strong>{{ cvInfo[3] }}</p>
-                        {% endif %}
+                        <p><strong>Отрасль: </strong>{{ cvInfo[2] }}</p>
+                        <p><strong>Должность: </strong>{{ cvInfo[3] }}</p>
 
                         {% if cvInfo[4] is not none %}
-                            <p><strong>Заработная плата до: </strong>{{ cvInfo[4] }}</p>
+                            <p><strong>Заработная плата от: </strong>{{ cvInfo[4] }}</p>
                         {% endif %}
 
-                        <p><strong>Опыт работы (лет): </strong>{{ cvInfo[5] }}</p>
-                        <p><strong>Тип занятости: </strong>{{ cvInfo[6] }}</p>
+                        {% if cvInfo[5] is not none %}
+                            <p><strong>Заработная плата до: </strong>{{ cvInfo[5] }}</p>
+                        {% endif %}
+
+                        <p><strong>Опыт работы (лет): </strong>{{ cvInfo[6] }}</p>
+                        <p><strong>Тип занятости: </strong>{{ cvInfo[7] }}</p>
                     </div>
                 </div>
             </div>
