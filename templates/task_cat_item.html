@@ -1,0 +1,33 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог заданий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог заданий</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>Сфера деятельности: </strong>{{ taskInfo[1] }}</p>
+                        <p><strong>Описание задания: </strong>{{ taskInfo[2] }}</p>
+                        <p><strong>Дата выполнения: </strong>{{ taskInfo[3] }}</p>
+                        <p><strong>Стоимость: </strong>{{ taskInfo[4] }} руб.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card"">
+                    <div class="card-body">
+                        <p><strong>ФИО: </strong>{{ customerName }}</p>
+                        <p><strong>email: </strong>{{ contacts[0] }}</p>
+                        <p><strong>Телефон: </strong>{{ contacts[1] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endblock content %}

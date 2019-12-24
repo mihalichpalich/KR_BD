@@ -1,0 +1,29 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Каталог заданий{% endblock title %}
+
+{%- block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Каталог заданий</h1>
+        </div>
+        <div class="row">
+            {% for item in taskInfo %}
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <p><strong>Сфера деятельности: </strong>{{ item[1] }}</p>
+                            <p><strong>Описание задания: </strong>{{ item[2] }}</p>
+                            <p><strong>Дата выполнения: </strong>{{ item[3] }}</p>
+                            <p><strong>Стоимость: </strong>{{ item[4] }} руб.</p>
+
+                            <form action="{{ url_for('taskCatItem', itemid=item[0], area=area) }}" method="GET">
+                                <button type="submit" class="btn btn-primary">Смотреть далее</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{%- endblock content %}

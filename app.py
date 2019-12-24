@@ -643,7 +643,7 @@ def cvCatItem(userid, itemid, industry, profession):
         cur.execute("insert into browsing (user_id, cv_id, view_data) values (%s, %s, %s)", (userid, itemid, data))
         conn.commit()
 
-        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
+        cur.execute('SELECT * FROM cv WHERE user_id = %s', (itemid))
         result = cur.fetchall()
         cvInfo = list(sum(result , ()))
         conn.commit()
@@ -715,7 +715,7 @@ def vacCatList(industry, profession):
 # вакансия полностью
 @app.route('/vacancy_cat_item/<industry>/<profession>/<itemid>')
 def vacCatItem(itemid, industry, profession):
-    cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE industry_name = %s and profession_name = %s', (industry, profession))
+    cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE vacancy_id = %s', (itemid))
     result = cur.fetchall()
     vacancyInfo = list(sum(result , ()))
     conn.commit()
@@ -730,6 +730,56 @@ def vacCatItem(itemid, industry, profession):
     contacts = list(sum(result , ()))
     conn.commit()
     return render_template("vacancy_cat_item.html", itemid=itemid, vacancyInfo=vacancyInfo, companyName=companyName, contacts=contacts)
+
+# КАТАЛОГ ЗАДАНИЙ
+# сферы деятельности
+@app.route('/task_cat_areas/')
+def taskCatAreas():
+    counts = []
+
+    cur.execute('SELECT area_name FROM area WHERE area_name in (select area_name from task) group by area_name')
+    areas = cur.fetchall()
+    conn.commit()
+
+    areas = list(sum(areas, ()))
+
+    for item in areas:
+        cur.execute('SELECT count(*) FROM task WHERE area_name = %s', (item,))
+        count = cur.fetchone()
+        counts.append(count)
+        conn.commit()
+
+    counts = list(sum(counts, ()))
+
+    data = list(zip(areas, counts))
+    return render_template("task_cat_areas.html", data=data)
+
+# список заданий
+@app.route('/task_cat_list/<area>')
+def taskCatList(area):
+    cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE area_name = %s', (area,))
+    taskInfo = cur.fetchall()
+    conn.commit()
+    return render_template("task_cat_list.html", taskInfo=taskInfo, area=area)
+
+# резюме полностью
+@app.route('/task_cat_item/<itemid>')
+def taskCatItem(itemid):
+    cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE task_id = %s', (itemid,))
+    result = cur.fetchall()
+    taskInfo = list(sum(result , ()))
+    conn.commit()
+
+    cur.execute('SELECT customer_name FROM customer WHERE user_id = (select user_id from task where task_id = %s)', (itemid,))
+    result = cur.fetchone()
+    customerName = result[0]
+    conn.commit()
+
+    cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from task where task_id = %s)', (itemid,))
+    result = cur.fetchall()
+    contacts = list(sum(result , ()))
+    conn.commit()
+    return render_template("task_cat_item.html", taskInfo=taskInfo, customerName=customerName, contacts=contacts)
 
 # удаление сессии
 @app.route('/dropsession')
