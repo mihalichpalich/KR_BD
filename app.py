@@ -5,6 +5,7 @@ from flask import *
 from flask_bootstrap import Bootstrap
 
 from functions import *
+from forms import *
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -61,11 +62,13 @@ def success():
 # вход
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
+    form = LoginForm()
+
+    if form.validate_on_submit():
         session.pop('user', None)
 
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = form.username.data
+        password = form.password.data
 
         if username == '' or password == '':
             return render_template("login.html", message='Пожайлуста, заполните все поля!')
@@ -89,7 +92,7 @@ def login():
 
         session['user'] = user_id
         return redirect(url_for('profile', status=status, username=username))
-    return render_template("login.html")
+    return render_template("login.html", form=form)
 
 # восстановление пароля
 @app.route('/pw_rec')
