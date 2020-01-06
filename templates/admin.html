@@ -3,17 +3,82 @@
 {% block title %}Панель администратора{% endblock title %}
 
 {%- block content %}
-    {{super()}}
+    <div class="container">
+        <div id="accordion">
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0 d-inline">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                          Работа с данными
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="card-body" id="child1">
+                        <div class="card">
+                            <div class="card-header">
+                                <a href="#" data-toggle="collapse" data-target="#collapseOneA">Отрасли и должности</a>
+                            </div>
+                            <div class="card-body collapse" data-parent="#child1" id="collapseOneA">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a href="{{ url_for('adminDataIPAdd') }}">Добавить отрасли и должности</a>
+                                    </div>
+                                </div>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="btn-group-vertical col-xs-3">
-            <button type="button" class="btn btn-light"><a href="{{ url_for('adminData') }}"><h1>Работа с данными</h1></a></button>
-            <button type="button" class="btn btn-light"><a href="{{ url_for('adminDeleteCv') }}"><h1>Удаление резюме</h1></a></button>
-            <button type="button" class="btn btn-light"><a href="{{ url_for('adminDeleteVacancy') }}"><h1>Удаление вакансий</h1></a></button>
-            <button type="button" class="btn btn-light"><a href="{{ url_for('adminDeleteTask') }}"><h1>Удаление заданий</h1></a></button>
-            <a href="{{ url_for('index') }}">Выход</a>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a href="{{ url_for('adminDataIndEdit') }}">Изменить отрасли</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <a href="#" data-toggle="collapse" data-target="#collapseOneB">Сферы деятельности</a>
+                            </div>
+                            <div class="card-body collapse" data-parent="#child1" id="collapseOneB">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a href="{{ url_for('adminDataAreasAdd') }}">Добавить сферу деятельности</a>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <a href="{{ url_for('adminDataAreasEdit') }}">Изменить сферу деятельности</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-header" id="headingTwo">
+                    <h5 class="mb-0 d-inline">
+                        <button class="btn btn-link">
+                          <a href="{{ url_for('adminDeleteCv') }}">Удаление устаревших резюме</a>
+                        </button>
+                    </h5>
+                </div>
+
+                <div class="card-header" id="headingThree">
+                    <h5 class="mb-0 d-inline">
+                        <button class="btn btn-link">
+                          <a href="{{ url_for('adminDeleteTask') }}">Удаление устаревших вакансий</a>
+                        </button>
+                    </h5>
+                </div>
+
+                <div class="card-header" id="headingFour">
+                    <h5 class="mb-0 d-inline">
+                        <button class="btn btn-link">
+                          <a href="{{ url_for('adminDeleteVacancy') }}">Удаление устаревших заданий</a>
+                        </button>
+                    </h5>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 {%- endblock content %}

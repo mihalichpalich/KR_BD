@@ -838,16 +838,7 @@ def dropsession():
 def admin():
     return render_template("admin.html")
 
-# админка, работа с данными
-@app.route('/admin_data')
-def adminData():
-    return render_template("admin_data.html")
-
 # АДМИНКА, ОТРАСЛИ И ДОЛЖНОСТИ
-@app.route('/admin_data_ip')
-def adminDataIP():
-    return render_template("admin_data_ip.html")
-
 # добавление
 @app.route('/admin_data_ip_add', methods=['GET', 'POST'])
 def adminDataIPAdd():
@@ -900,10 +891,6 @@ def adminDataIndEdit():
     return render_template("admin_data_ind_edit.html", industries=industries)
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
-@app.route('/admin_data_areas')
-def adminDataAreas():
-    return render_template("admin_data_areas.html")
-
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
