@@ -23,10 +23,6 @@ def before_request():
 def index():
     return render_template("index.html")
 
-@app.route('/guest_mode')
-def guestMode():
-    return render_template("guest_mode.html")
-
 # регистрация
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signUp():

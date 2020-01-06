@@ -3,15 +3,50 @@
 {% block title %}Добро пожаловать на сайт{% endblock title %}
 
 {%- block content %}
-    {{super()}}
-
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="btn-group-vertical col-xs-3">
-          <button type="button" class="btn btn-light"><a href="{{ url_for('login') }}"><h1>Войти</h1></a></button>
-          <button type="button" class="btn btn-light"><a href="{{ url_for('signUp') }}"><h1>Зарегистрироваться</h1></a></button>
-          <button type="button" class="btn btn-light"><a href="{{ url_for('guestMode') }}"><h1>Продолжить как гость</h1></a></button>
+    <div id="accordion">
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h1 class="mb-0">
+                    <button class="btn btn-link">
+                      <a href="{{ url_for('login') }}">Войти</a>
+                    </button>
+                </h1>
+            </div>
         </div>
-      </div>
+
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h1 class="mb-0">
+                    <button class="btn btn-link">
+                      <a href="{{ url_for('signUp') }}">Зарегистрироваться</a>
+                    </button>
+                </h1>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" id="headingThree">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                      Продолжить как гость
+                    </button>
+                </h5>
+            </div>
+
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+
+                <div class="card-body">
+                    <div class="btn-group-vertical">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link"><a href="{{ url_for('vacCatInd') }}">Каталог вакансий</a></button>
+                        </h5>
+
+                        <h5 class="mb-0">
+                            <button class="btn btn-link"><a href="{{ url_for('taskCatAreas') }}">Каталог заданий</a></button>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {%- endblock content %}
