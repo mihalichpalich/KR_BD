@@ -3,7 +3,6 @@ from datetime import date
 
 from flask import *
 from flask_bootstrap import Bootstrap
-from werkzeug.security import generate_password_hash, check_password_hash
 
 from functions import *
 
@@ -12,6 +11,7 @@ app.secret_key = os.urandom(24)
 Bootstrap(app)
 
 createDatabase()
+createAdmin()
 
 @app.before_request
 def before_request():
@@ -70,9 +70,6 @@ def login():
         if username == '' or password == '':
             return render_template("login.html", message='Пожайлуста, заполните все поля!')
 
-        if username == 'admin' and password == 'admin':
-            return redirect(url_for('admin'))
-
         cur.execute('SELECT user_id, password, status FROM person WHERE login = %s', (username, ))
         if cur.rowcount == 0:
             return render_template("login.html", message='Пользователя с данным логином не существует!')
@@ -81,6 +78,10 @@ def login():
         passwordHash = result[1]
         status = result[2]
         conn.commit()
+
+        if username == 'admin' and password == 'admin':
+            session['user'] = user_id
+            return redirect(url_for('admin'))
 
         resultHash = check_password_hash(passwordHash, password)
         if not resultHash:
@@ -836,170 +837,173 @@ def dropsession():
 # панель администратора
 @app.route('/admin')
 def admin():
-    return render_template("admin.html")
+    if g.user:
+        return render_template("admin.html")
 
 # АДМИНКА, ОТРАСЛИ И ДОЛЖНОСТИ
 # добавление
 @app.route('/admin_data_ip_add', methods=['GET', 'POST'])
 def adminDataIPAdd():
-    industries = selectColumn('industry_name', 'industry_profession')
-    professions = selectColumn('profession_name', 'industry_profession')
+    if g.user:
+        industries = selectColumn('industry_name', 'industry_profession')
+        professions = selectColumn('profession_name', 'industry_profession')
 
-    if request.method == 'POST':
-        industry = request.form.get('industry')
-        profession = request.form.get('profession')
+        if request.method == 'POST':
+            industry = request.form.get('industry')
+            profession = request.form.get('profession')
 
-        if industry == '' or profession == '':
-            return render_template("admin_data_ip_add.html", message='Не введена отрасль или дожность!')
-        else:
-            try:
-                if industry not in industries:
-                    cur.execute("insert into industry (industry_name) values (%s)", (industry, ))
+            if industry == '' or profession == '':
+                return render_template("admin_data_ip_add.html", message='Не введена отрасль или дожность!')
+            else:
+                try:
+                    if industry not in industries:
+                        cur.execute("insert into industry (industry_name) values (%s)", (industry, ))
+                        conn.commit()
+                    if profession not in professions:
+                        cur.execute("insert into profession (profession_name) values (%s)", (profession, ))
+                        conn.commit()
+                    cur.execute("insert into industry_profession (industry_name, profession_name) values (%s, %s)", (industry, profession, ))
                     conn.commit()
-                if profession not in professions:
-                    cur.execute("insert into profession (profession_name) values (%s)", (profession, ))
-                    conn.commit()
-                cur.execute("insert into industry_profession (industry_name, profession_name) values (%s, %s)", (industry, profession, ))
-                conn.commit()
-                return redirect(url_for('adminDataIPAdd'))
-            except psycopg2.errors.UniqueViolation:
-                conn.rollback()
-                return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions)
-    return render_template("admin_data_ip_add.html", industries=industries, professions=professions)
+                    return redirect(url_for('adminDataIPAdd'))
+                except psycopg2.errors.UniqueViolation:
+                    conn.rollback()
+                    return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions)
+        return render_template("admin_data_ip_add.html", industries=industries, professions=professions)
 
 # изменение
 @app.route('/admin_data_ind_edit', methods=['GET', 'POST'])
 def adminDataIndEdit():
-    industries = selectColumn('industry_name', 'industry')
+    if g.user:
+        industries = selectColumn('industry_name', 'industry')
 
-    if request.method == 'POST':
-        industryOld = request.form.get('old_industry')
-        industryNew = request.form.get('new_industry')
+        if request.method == 'POST':
+            industryOld = request.form.get('old_industry')
+            industryNew = request.form.get('new_industry')
 
-        if industryOld == '' or industryNew == '':
-            return render_template("admin_data_ind_edit.html", message='Введите название отрасли!')
-        else:
-            try:
-                cur.execute("update industry set industry_name = %s WHERE industry_name = %s",
-                            (industryNew, industryOld))
-                conn.commit()
-                return redirect(url_for('adminDataIndEdit'))
-            except psycopg2.errors.UniqueViolation:
-                conn.rollback()
-                return render_template("admin_data_ind_edit.html",
-                                       message='Данная отрасль уже существует!')
-    return render_template("admin_data_ind_edit.html", industries=industries)
+            if industryOld == '' or industryNew == '':
+                return render_template("admin_data_ind_edit.html", message='Введите название отрасли!')
+            else:
+                try:
+                    cur.execute("update industry set industry_name = %s WHERE industry_name = %s",
+                                (industryNew, industryOld))
+                    conn.commit()
+                    return redirect(url_for('adminDataIndEdit'))
+                except psycopg2.errors.UniqueViolation:
+                    conn.rollback()
+                    return render_template("admin_data_ind_edit.html",
+                                           message='Данная отрасль уже существует!')
+        return render_template("admin_data_ind_edit.html", industries=industries)
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
-    areas = selectColumn('area_name', 'area')
+    if g.user:
+        areas = selectColumn('area_name', 'area')
 
-    if request.method == 'POST':
-        area = request.form.get('area')
+        if request.method == 'POST':
+            area = request.form.get('area')
 
-        if area != '':
-            try:
-                cur.execute("insert into area (area_name) values (%s)", (area, ))
-                conn.commit()
-                return redirect(url_for('adminDataAreasAdd'))
-            except psycopg2.errors.UniqueViolation:
-                conn.rollback()
-                return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!')
-        else:
-            return render_template("admin_data_areas_add.html", message='Не введена сфера деятельности!')
-    return render_template("admin_data_areas_add.html", areas=areas)
+            if area != '':
+                try:
+                    cur.execute("insert into area (area_name) values (%s)", (area, ))
+                    conn.commit()
+                    return redirect(url_for('adminDataAreasAdd'))
+                except psycopg2.errors.UniqueViolation:
+                    conn.rollback()
+                    return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!')
+            else:
+                return render_template("admin_data_areas_add.html", message='Не введена сфера деятельности!')
+        return render_template("admin_data_areas_add.html", areas=areas)
 
 # изменение
 @app.route('/admin_data_areas_edit', methods=['GET', 'POST'])
 def adminDataAreasEdit():
-    areas = selectColumn('area_name', 'area')
+    if g.user:
+        areas = selectColumn('area_name', 'area')
 
-    if request.method == 'POST':
-        areaOld = request.form.get('old_area')
-        areaNew = request.form.get('new_area')
+        if request.method == 'POST':
+            areaOld = request.form.get('old_area')
+            areaNew = request.form.get('new_area')
 
-        if areaOld == '' or areaNew == '':
-            return render_template("admin_data_areas_add.html", message='Введите название!')
-        else:
-            try:
-                cur.execute("update area set area_name = %s WHERE area_name = %s", (areaNew, areaOld))
-                conn.commit()
-                return redirect(url_for('adminDataAreasEdit'))
-            except psycopg2.errors.UniqueViolation:
-                conn.rollback()
-                return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!')
-    return render_template("admin_data_areas_edit.html", areas=areas)
+            if areaOld == '' or areaNew == '':
+                return render_template("admin_data_areas_add.html", message='Введите название!')
+            else:
+                try:
+                    cur.execute("update area set area_name = %s WHERE area_name = %s", (areaNew, areaOld))
+                    conn.commit()
+                    return redirect(url_for('adminDataAreasEdit'))
+                except psycopg2.errors.UniqueViolation:
+                    conn.rollback()
+                    return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!')
+        return render_template("admin_data_areas_edit.html", areas=areas)
 
 # АДМИНКА, УДАЛЕНИЕ
 # удаление резюме
 @app.route('/admin_delete_cv', methods=['GET', 'POST'])
 def adminDeleteCv():
-    if request.method == 'POST':
-        day = request.form.get('day')
-        month = request.form.get('month')
-        year = request.form.get('year')
+    if g.user:
+        if request.method == 'POST':
+            day = request.form.get('day')
+            month = request.form.get('month')
+            year = request.form.get('year')
 
-        try:
-            dayNum = int(day)
-            monthNum = int(month)
-            yearNum = int(year)
-        except ValueError:
-            return render_template("admin_delete_cv.html", message="Введено не целочисленное значение!")
+            try:
+                dayNum = int(day)
+                monthNum = int(month)
+                yearNum = int(year)
+            except ValueError:
+                return render_template("admin_delete_cv.html", message="Введено не целочисленное значение!")
 
-        dateInput = date(yearNum, monthNum, dayNum)
+            dateInput = date(yearNum, monthNum, dayNum)
 
-        cur.execute('delete from cv where cv_pub_data::date < %s::date', (dateInput,))
-        conn.commit()
-    return render_template("admin_delete_cv.html")
+            cur.execute('delete from cv where cv_pub_data::date < %s::date', (dateInput,))
+            conn.commit()
+        return render_template("admin_delete_cv.html")
 
 # удаление вакансий
 @app.route('/admin_delete_vacancy', methods=['GET', 'POST'])
 def adminDeleteVacancy():
-    if request.method == 'POST':
-        day = request.form.get('day')
-        month = request.form.get('month')
-        year = request.form.get('year')
+    if g.user:
+        if request.method == 'POST':
+            day = request.form.get('day')
+            month = request.form.get('month')
+            year = request.form.get('year')
 
-        try:
-            dayNum = int(day)
-            monthNum = int(month)
-            yearNum = int(year)
-        except ValueError:
-            return render_template("admin_delete_vacancy.html", message="Введено не целочисленное значение!")
+            try:
+                dayNum = int(day)
+                monthNum = int(month)
+                yearNum = int(year)
+            except ValueError:
+                return render_template("admin_delete_vacancy.html", message="Введено не целочисленное значение!")
 
-        dateInput = date(yearNum, monthNum, dayNum)
+            dateInput = date(yearNum, monthNum, dayNum)
 
-        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (dateInput,))
-        conn.commit()
-    return render_template("admin_delete_vacancy.html")
+            cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (dateInput,))
+            conn.commit()
+        return render_template("admin_delete_vacancy.html")
 
 # удаление заданий
 @app.route('/admin_delete_task', methods=['GET', 'POST'])
 def adminDeleteTask():
-    if request.method == 'POST':
-        day = request.form.get('day')
-        month = request.form.get('month')
-        year = request.form.get('year')
+    if g.user:
+        if request.method == 'POST':
+            day = request.form.get('day')
+            month = request.form.get('month')
+            year = request.form.get('year')
 
-        try:
-            dayNum = int(day)
-            monthNum = int(month)
-            yearNum = int(year)
-        except ValueError:
-            return render_template("admin_delete_task.html", message="Введено не целочисленное значение!")
+            try:
+                dayNum = int(day)
+                monthNum = int(month)
+                yearNum = int(year)
+            except ValueError:
+                return render_template("admin_delete_task.html", message="Введено не целочисленное значение!")
 
-        dateInput = date(yearNum, monthNum, dayNum)
+            dateInput = date(yearNum, monthNum, dayNum)
 
-        cur.execute('delete from task where exec_date::date < %s::date', (dateInput,))
-        conn.commit()
-    return render_template("admin_delete_task.html")
-
-@app.route('/vacancy_cat')
-def vacancyCat():
-    vacancies = ["Engineer", "Programmist", "Cleaner"]
-    return render_template("vacancy_cat.html", vacancies=vacancies)
+            cur.execute('delete from task where exec_date::date < %s::date', (dateInput,))
+            conn.commit()
+        return render_template("admin_delete_task.html")
 
 if __name__ == '__main__':
     app.run(debug=True)

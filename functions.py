@@ -1,5 +1,6 @@
 import psycopg2
 from psycopg2 import sql
+from werkzeug.security import generate_password_hash, check_password_hash
 
 conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
 cur = conn.cursor()
@@ -42,6 +43,16 @@ def createDatabase():
         conn.commit()
     except Exception as e:
         print(e)
+
+def createAdmin():
+    adminPswdHash = generate_password_hash('admin')
+
+    try:
+        cur.execute("insert into person (login, password, status, email, phone) values ('admin', %s, 'admin', 'admin@admin.ru', '0000000000')", (adminPswdHash, ))
+        conn.commit()
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        pass
 
 def loadInfoFromProfile(columnname, tablename, name):
     cur.execute(
