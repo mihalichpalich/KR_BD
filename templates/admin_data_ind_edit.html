@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Изменить отрасли{% endblock title %}
@@ -9,15 +10,10 @@
                 <form action="{{ url_for('adminDataIndEdit') }}" method="POST">
                     <div class="row justify-content-center">
                         <div class="col-lg-6">
-                            <div class="form-group">
-                                <label for="login">Введите название отрасли:</label>
-                                <input type="text" name="old_industry" class="form-control" id="old_industry">
-                            </div>
+                            {{ form.csrf_token }}
 
-                            <div class="form-group">
-                                <label for="login">Введите новое название отрасли:</label>
-                                <input type="text" name="new_industry" class="form-control" id="new_industry">
-                            </div>
+                            {{ render_field(form.industryOld)}}
+                            {{ render_field(form.industryNew)}}
                         </div>
                     </div>
 

@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Изменить сферу деятельности{% endblock title %}
@@ -7,15 +8,10 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('adminDataAreasEdit') }}" method="POST">
-                    <div class="form-group">
-                        <label for="login">Введите сферу деятельности:</label>
-                        <input type="text" name="old_area" class="form-control" id="old_area">
-                    </div>
+                    {{ form.csrf_token }}
 
-                    <div class="form-group">
-                        <label for="login">Введите новое название:</label>
-                        <input type="text" name="new_area" class="form-control" id="new_area">
-                    </div>
+                    {{ render_field(form.areaOld)}}
+                    {{ render_field(form.areaNew)}}
 
                     <div class="row justify-content-end form-group">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Изменить</button>

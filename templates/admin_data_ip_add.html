@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Добавить отрасли и должности{% endblock title %}
@@ -7,15 +8,10 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('adminDataIPAdd') }}" method="POST">
-                    <div class="form-group">
-                        <label for="industry">Введите отрасль:</label>
-                        <input type="text" name="industry" class="form-control" id="industry">
-                    </div>
+                    {{ form.csrf_token }}
 
-                    <div class="form-group">
-                        <label for="profession">Введите соответствующую ей должность:</label>
-                        <input type="text" name="profession" class="form-control" id="profession">
-                    </div>
+                    {{ render_field(form.industry)}}
+                    {{ render_field(form.profession)}}
 
                     <div class="row justify-content-end form-group">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Добавить</button>

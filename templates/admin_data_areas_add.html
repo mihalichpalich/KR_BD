@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Добавить сферу деятельности{% endblock title %}
@@ -7,10 +8,9 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('adminDataAreasAdd') }}" method="POST">
-                    <div class="form-group">
-                        <label for="login">Введите сферу деятельности:</label>
-                        <input type="text" name="area" class="form-control" id="area">
-                    </div>
+                    {{ form.csrf_token }}
+
+                    {{ render_field(form.area)}}
 
                     <div class="row justify-content-end form-group">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Добавить</button>

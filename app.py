@@ -122,13 +122,9 @@ def profile(status, username):
         warning = ''
 
         if status == 'company':
-            # загружаем инн
             inn = loadInfoFromProfile('inn', 'company', username)
-            # загружаем название
             companyName = loadInfoFromProfile('company_name', 'company', username)
-            # загружаем телефон
             companyPhone = loadInfoFromPerson('phone', username)
-            # загружаем email
             companyEmail = loadInfoFromPerson('email', username)
 
             if inn == '' or companyName == '':
@@ -137,11 +133,8 @@ def profile(status, username):
                                    companyPhone=companyPhone, companyEmail=companyEmail, warning=warning)
 
         if status == 'employee':
-            # загружаем фио
             fullName = loadInfoFromProfile('full_name', 'employee', username)
-            # загружаем телефон
             employeePhone = loadInfoFromPerson('phone', username)
-            # загружаем email
             employeeEmail = loadInfoFromPerson('email', username)
 
             if fullName == '':
@@ -150,11 +143,8 @@ def profile(status, username):
                                    employeePhone=employeePhone, employeeEmail=employeeEmail, warning=warning)
 
         if status == 'customer':
-            # загружаем имя
             customerName = loadInfoFromProfile('customer_name', 'customer', username)
-            # загружаем телефон
             customerPhone = loadInfoFromPerson('phone', username)
-            # загружаем email
             customerEmail = loadInfoFromPerson('email', username)
 
             if customerName == '':
@@ -163,17 +153,11 @@ def profile(status, username):
                                    customerPhone=customerPhone, customerEmail=customerEmail, warning=warning)
 
         if status == 'performer':
-            # загружаем имя
             performerName = loadInfoFromProfile('performer_name', 'performer', username)
-            # загружаем сферу деятельности
             performerArea = loadInfoFromProfile('area_name', 'performer', username)
-            # загружаем описание услуг
             servicesDescr = loadInfoFromProfile('services_descr', 'performer', username)
-            # загружаем телефон
             performerPhone = loadInfoFromPerson('phone', username)
-            # загружаем email
             performerEmail = loadInfoFromPerson('email', username)
-
 
             if performerName == '' or performerArea == '' or servicesDescr == '':
                 warning = True
@@ -845,95 +829,89 @@ def adminDataIPAdd():
         industries = selectColumn('industry_name', 'industry_profession')
         professions = selectColumn('profession_name', 'industry_profession')
 
-        if request.method == 'POST':
-            industry = request.form.get('industry')
-            profession = request.form.get('profession')
+        form = IpAddForm()
 
-            if industry == '' or profession == '':
-                return render_template("admin_data_ip_add.html", message='Не введена отрасль или дожность!')
-            else:
-                try:
-                    if industry not in industries:
-                        cur.execute("insert into industry (industry_name) values (%s)", (industry, ))
-                        conn.commit()
-                    if profession not in professions:
-                        cur.execute("insert into profession (profession_name) values (%s)", (profession, ))
-                        conn.commit()
-                    cur.execute("insert into industry_profession (industry_name, profession_name) values (%s, %s)", (industry, profession, ))
+        if form.validate_on_submit():
+            industry = form.industry.data
+            profession = form.profession.data
+
+            try:
+                if industry not in industries:
+                    cur.execute("insert into industry (industry_name) values (%s)", (industry, ))
                     conn.commit()
-                    return redirect(url_for('adminDataIPAdd'))
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions)
-        return render_template("admin_data_ip_add.html", industries=industries, professions=professions)
+                if profession not in professions:
+                    cur.execute("insert into profession (profession_name) values (%s)", (profession, ))
+                    conn.commit()
+                cur.execute("insert into industry_profession (industry_name, profession_name) values (%s, %s)", (industry, profession, ))
+                conn.commit()
+                return redirect(url_for('adminDataIPAdd'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions, form=form)
+    return render_template("admin_data_ip_add.html", industries=industries, professions=professions, form=form)
 
 # изменение
 @app.route('/admin_data_ind_edit', methods=['GET', 'POST'])
 def adminDataIndEdit():
+    form = IndEditForm()
+
     if g.user:
         industries = selectColumn('industry_name', 'industry')
 
         if request.method == 'POST':
-            industryOld = request.form.get('old_industry')
-            industryNew = request.form.get('new_industry')
-
-            if industryOld == '' or industryNew == '':
-                return render_template("admin_data_ind_edit.html", message='Введите название отрасли!')
-            else:
-                try:
-                    cur.execute("update industry set industry_name = %s WHERE industry_name = %s",
-                                (industryNew, industryOld))
-                    conn.commit()
-                    return redirect(url_for('adminDataIndEdit'))
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("admin_data_ind_edit.html",
-                                           message='Данная отрасль уже существует!')
-        return render_template("admin_data_ind_edit.html", industries=industries)
+            industryOld = form.industryOld.data
+            industryNew = form.industryNew.data
+            try:
+                cur.execute("update industry set industry_name = %s WHERE industry_name = %s",
+                            (industryNew, industryOld))
+                conn.commit()
+                return redirect(url_for('adminDataIndEdit'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_ind_edit.html", message='Данная отрасль уже существует!', form=form)
+    return render_template("admin_data_ind_edit.html", industries=industries, form=form)
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
+    form = AreasAddForm()
+
     if g.user:
         areas = selectColumn('area_name', 'area')
 
         if request.method == 'POST':
-            area = request.form.get('area')
+            area = form.area.data
 
-            if area != '':
-                try:
-                    cur.execute("insert into area (area_name) values (%s)", (area, ))
-                    conn.commit()
-                    return redirect(url_for('adminDataAreasAdd'))
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!')
-            else:
-                return render_template("admin_data_areas_add.html", message='Не введена сфера деятельности!')
-        return render_template("admin_data_areas_add.html", areas=areas)
+            try:
+                cur.execute("insert into area (area_name) values (%s)", (area, ))
+                conn.commit()
+                return redirect(url_for('adminDataAreasAdd'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!', form=form)
+    return render_template("admin_data_areas_add.html", areas=areas, form=form)
 
 # изменение
 @app.route('/admin_data_areas_edit', methods=['GET', 'POST'])
 def adminDataAreasEdit():
+    form = AreasEditForm()
+
     if g.user:
         areas = selectColumn('area_name', 'area')
 
         if request.method == 'POST':
-            areaOld = request.form.get('old_area')
-            areaNew = request.form.get('new_area')
+            areaOld = form.areaOld.data
+            areaNew = form.areaNew.data
 
-            if areaOld == '' or areaNew == '':
-                return render_template("admin_data_areas_add.html", message='Введите название!')
-            else:
-                try:
-                    cur.execute("update area set area_name = %s WHERE area_name = %s", (areaNew, areaOld))
-                    conn.commit()
-                    return redirect(url_for('adminDataAreasEdit'))
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!')
-        return render_template("admin_data_areas_edit.html", areas=areas)
+            try:
+                cur.execute("update area set area_name = %s WHERE area_name = %s", (areaNew, areaOld))
+                conn.commit()
+                return redirect(url_for('adminDataAreasEdit'))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!', form=form)
+    return render_template("admin_data_areas_edit.html", areas=areas, form=form)
 
 # АДМИНКА, УДАЛЕНИЕ
 # удаление резюме

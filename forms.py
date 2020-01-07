@@ -17,3 +17,18 @@ class PwRecForm(FlaskForm):
     login = StringField('Введите логин: ', validators=[InputRequired('Не введен логин')])
     passwordOld = PasswordField('Введите новый пароль: ', validators=[InputRequired('Не введен пароль')])
     passwordNew = PasswordField('Введите новый пароль еще раз: ', validators=[InputRequired('Не введен пароль')])
+
+class IpAddForm(FlaskForm):
+    industry = StringField('Введите отрасль: ', validators=[InputRequired('Не введена отрасль')])
+    profession = StringField('Введите соответствующую ей должность: ', validators=[InputRequired('Не введена должность')])
+
+class IndEditForm(FlaskForm):
+    industryOld = StringField('Введите название отрасли: ', validators=[InputRequired('Не введена отрасль')])
+    industryNew = StringField('Введите новое название отрасли: ', validators=[InputRequired('Не введена отрасль')])
+
+class AreasAddForm(FlaskForm):
+    area = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности')])
+
+class AreasEditForm(FlaskForm):
+    areaOld = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности')])
+    areaNew = StringField('Введите новое название: ', validators=[InputRequired('Не введена сфера деятельности')])
