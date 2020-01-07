@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, RadioField, DateField
+from wtforms import StringField, PasswordField, RadioField, DateField, SelectField
 from wtforms.validators import InputRequired, Length, DataRequired
+
+from functions import *
 
 class SignUpForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов')])
@@ -35,3 +37,33 @@ class AreasEditForm(FlaskForm):
 
 class DateForm(FlaskForm):
     date = DateField('', format='%Y-%m-%d', validators=[DataRequired('Дата введена в неправильном формате!')])
+
+class ProfEdCompanyForm(FlaskForm):
+    inn = StringField('ИНН: ')
+    companyName = StringField('Название фирмы: ')
+    companyPhone = StringField('Телефон фирмы: ')
+    companyEmail = StringField('e-mail фирмы: ')
+
+class ProfEdEmployeeForm(FlaskForm):
+    fullName = StringField('ФИО: ')
+    employeePhone = StringField('Телефон: ')
+    employeeEmail = StringField('e-mail: ')
+
+class ProfEdCustomerForm(FlaskForm):
+    customerName = StringField('Имя: ')
+    customerPhone = StringField('Телефон: ')
+    customerEmail = StringField('e-mail: ')
+
+class ProfEdPerformerForm(FlaskForm):
+    areasSelect = []
+
+    areas = selectColumn('area_name', 'area')
+    for i in areas:
+        areasSelect.append((i, i))
+    areasSelect.append(('', ''))
+
+    performerName = StringField('Имя: ')
+    performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect)
+    servicesDescr = StringField('О своей деятельности:  ')
+    performerPhone = StringField('Телефон: ')
+    performerEmail = StringField('e-mail: ')

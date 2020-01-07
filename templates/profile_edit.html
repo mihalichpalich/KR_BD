@@ -1,96 +1,108 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Редактирование профиля{% endblock title %}
 
 {%- block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ (url_for('profile', status=status, username=username)) }}">
+                            {% if status == 'company' %}
+                                О компании
+                            {% elif status == 'employee' %}
+                                О соискателе
+                            {% elif status == 'customer' %}
+                                О заказчике
+                            {% elif status == 'performer' %}
+                                О исполнителе
+                            {% endif %}
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Добавить вакансию
+                                {% elif status == 'employee' %}
+                                    Добавить резюме
+                                {% elif status == 'customer' %}
+                                    Добавить задание
+                                {% endif %}
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Мои вакансии
+                                {% elif status == 'employee' %}
+                                    Мои резюме
+                                {% elif status == 'customer' %}
+                                    Мои задания
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item">
+                        {% if status == 'company' %}
+                           <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
+                        {% endif %}
+                        {% if status == 'employee' %}
+                           <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
+                        {% endif %}
+                        {% if status == 'customer' %}
+                           <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
+                        {% endif %}
+                        {% if status == 'performer' %}
+                           <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
+                        {% endif %}
+                    </li>
+                </ul>
+
+                <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('profileEdit', status=status, username=username) }}" method="POST">
                     {% if status == 'company' %}
-                        <div class="form-group">
-                            <label for="login">ИНН:</label>
-                            <input type="text" name="inn" class="form-control" id="inn">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Название фирмы:</label>
-                            <input type="text" name="company_name" class="form-control" id="company_name">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Телефон фирмы:</label>
-                            <input type="text" name="company_phone" class="form-control" id="phone">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">e-mail фирмы:</label>
-                            <input type="email" name="company_email" class="form-control" id="company_email">
-                        </div>
+                        {{ formCompany.csrf_token }}
+                        {{ render_field(formCompany.inn)}}
+                        {{ render_field(formCompany.companyName)}}
+                        {{ render_field(formCompany.companyEmail)}}
+                        {{ render_field(formCompany.companyPhone)}}
                     {% endif %}
 
                     {% if status == 'employee' %}
-                        <div class="form-group">
-                            <label for="login">ФИО:</label>
-                            <input type="text" name="full_name" class="form-control" id="inn">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Телефон:</label>
-                            <input type="text" name="employee_phone" class="form-control" id="phone">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">e-mail:</label>
-                            <input type="email" name="employee_email" class="form-control" id="employee_email">
-                        </div>
+                        {{ formEmployee.csrf_token }}
+                        {{ render_field(formEmployee.fullName)}}
+                        {{ render_field(formEmployee.employeeEmail)}}
+                        {{ render_field(formEmployee.employeePhone)}}
                     {% endif %}
 
                     {% if status == 'customer' %}
-                        <div class="form-group">
-                            <label for="login">Имя:</label>
-                            <input type="text" name="customer_name" class="form-control" id="customer_name">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Телефон:</label>
-                            <input type="text" name="customer_phone" class="form-control" id="phone">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">e-mail:</label>
-                            <input type="email" name="customer_email" class="form-control" id="customer_email">
-                        </div>
+                        {{ formCustomer.csrf_token }}
+                        {{ render_field(formCustomer.customerName)}}
+                        {{ render_field(formCustomer.customerEmail)}}
+                        {{ render_field(formCustomer.customerPhone)}}
                     {% endif %}
 
                     {% if status == 'performer' %}
-                        <div class="form-group">
-                            <label for="login">Имя:</label>
-                            <input type="text" name="performer_name" class="form-control" id="performer_name">
-                        </div>
-
-                        <select class="custom-select" id="inputGroupSelect01" name="performer_area">
-                            <option selected value="" disabled>Выберите сферу деятельности</option>
-
-                            {% for item in areas %}
-                                <option value="{{ item }}">{{ item }}</option>
-                            {% endfor %}
-                        </select>
-
-                        <div class="form-group">
-                            <label for="password">О своей деятельности::</label>
-                            <input type="text" name="services_descr" class="form-control" id="services_descr">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Телефон:</label>
-                            <input type="text" name="performer_phone" class="form-control" id="phone">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">e-mail:</label>
-                            <input type="email" name="performer_email" class="form-control" id="customer_email">
-                        </div>
+                        {{ formPerformer.csrf_token }}
+                        {{ render_field(formPerformer.performerName) }}
+                        {{ render_field(formPerformer.performerArea) }}
+                        {{ render_field(formPerformer.servicesDescr) }}
+                        {{ render_field(formPerformer.performerEmail) }}
+                        {{ render_field(formPerformer.performerPhone) }}
                     {% endif %}
 
                     <div class="row justify-content-end form-group">

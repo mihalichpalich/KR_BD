@@ -3,71 +3,71 @@
 {% block title %}Личный кабинет{% endblock title %}
 
 {%- block content %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
-    <div class="container">
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="{{ (url_for('profile', status=status, username=username)) }}">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ (url_for('profile', status=status, username=username)) }}">
+                            {% if status == 'company' %}
+                                О компании
+                            {% elif status == 'employee' %}
+                                О соискателе
+                            {% elif status == 'customer' %}
+                                О заказчике
+                            {% elif status == 'performer' %}
+                                О исполнителе
+                            {% endif %}
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Добавить вакансию
+                                {% elif status == 'employee' %}
+                                    Добавить резюме
+                                {% elif status == 'customer' %}
+                                    Добавить задание
+                                {% endif %}
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Мои вакансии
+                                {% elif status == 'employee' %}
+                                    Мои резюме
+                                {% elif status == 'customer' %}
+                                    Мои задания
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item">
                         {% if status == 'company' %}
-                            О компании
-                        {% elif status == 'employee' %}
-                            О соискателе
-                        {% elif status == 'customer' %}
-                            О заказчике
-                        {% elif status == 'performer' %}
-                            О исполнителе
+                           <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
                         {% endif %}
-                        <span class="sr-only">(current)</span>
-                    </a>
-                </li>
-
-                {% if not warning %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
-                            {% if status == 'company' %}
-                                Добавить вакансию
-                            {% elif status == 'employee' %}
-                                Добавить резюме
-                            {% elif status == 'customer' %}
-                                Добавить задание
-                            {% endif %}
-                        </a>
+                        {% if status == 'employee' %}
+                           <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
+                        {% endif %}
+                        {% if status == 'customer' %}
+                           <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
+                        {% endif %}
+                        {% if status == 'performer' %}
+                           <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
+                        {% endif %}
                     </li>
+                </ul>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
-                            {% if status == 'company' %}
-                                Мои вакансии
-                            {% elif status == 'employee' %}
-                                Мои резюме
-                            {% elif status == 'customer' %}
-                                Мои задания
-                            {% endif %}
-                        </a>
-                    </li>
-                {% endif %}
-
-                <li class="nav-item">
-                    {% if status == 'company' %}
-                       <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
-                    {% endif %}
-                    {% if status == 'employee' %}
-                       <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
-                    {% endif %}
-                    {% if status == 'customer' %}
-                       <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
-                    {% endif %}
-                    {% if status == 'performer' %}
-                       <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
-                    {% endif %}
-                </li>
-            </ul>
-
-            <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
+                <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <div class="container">
         <div class="row">

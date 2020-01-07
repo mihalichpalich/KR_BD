@@ -4,7 +4,6 @@ from datetime import date
 from flask import *
 from flask_bootstrap import Bootstrap
 
-from functions import *
 from forms import *
 
 app = Flask(__name__)
@@ -172,124 +171,161 @@ def profileEdit(status, username):
     if g.user:
         userID = getUserID(username)
 
-        if status == 'company':
-            if request.method == 'POST':
-                inn = request.form.get('inn')
-                companyName = request.form.get('company_name')
-                companyPhone = request.form.get('company_phone')
-                companyEmail = request.form.get('company_email')
+        cur.execute('SELECT company_name FROM company WHERE user_id = %s', (userID,))
+        result = cur.fetchone()
+        companyInfo = []
+        if result:
+            companyInfo = result[0]
+        conn.commit()
 
-                isCompany = userExist('company', userID)
+        cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
+        result = cur.fetchone()
+        employeeInfo = []
+        if result is not None:
+            employeeInfo = result[0]
+        conn.commit()
 
-                try:
-                    if isCompany == 0:
-                        if inn == '' or companyName == '':
-                            return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                        cur.execute("insert into company (user_id, inn, company_name) values (%s, %s, %s)", (userID, inn, companyName, ))
-                    else:
-                        if inn != '':
-                            cur.execute('update company set inn = %s WHERE user_id = %s', (inn, userID, ))
-                        if companyName != '':
-                            cur.execute('update company set company_name = %s WHERE user_id = %s', (companyName, userID,))
-                        if companyPhone != '':
-                            cur.execute('update person set phone = %s WHERE user_id = %s', (companyPhone, userID,))
-                        if companyEmail != '':
-                            cur.execute('update person set email = %s WHERE user_id = %s', (companyEmail, userID,))
+        cur.execute('SELECT customer_name FROM customer WHERE user_id = %s', (userID,))
+        result = cur.fetchone()
+        customerInfo = ''
+        if result is not None:
+            customerInfo = result[0]
+        conn.commit()
+
+        cur.execute('SELECT performer_name, area_name, services_descr FROM performer WHERE user_id = %s', (userID,))
+        result = cur.fetchall()
+        performerInfo = []
+        if result:
+            performerInfo = list(sum(result, ()))
+        conn.commit()
+
+        formCompany = ProfEdCompanyForm(companyName=companyInfo)
+        formEmployee = ProfEdEmployeeForm(fullName=employeeInfo)
+        formCustomer = ProfEdCustomerForm(customerName=customerInfo)
+
+        if performerInfo:
+            formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2])
+        else:
+            formPerformer = []
+
+        if status == 'company' and formCompany.validate_on_submit():
+            inn = formCompany.inn.data
+            companyName = formCompany.companyName.data
+            companyPhone = formCompany.companyPhone.data
+            companyEmail = formCompany.companyEmail.data
+
+            isCompany = userExist('company', userID)
+
+            try:
+                if isCompany == 0:
+                    if inn == '' or companyName == '':
+                        return render_template("profile_edit.html", message='Пожайлуста, введите ИНН и название компании', status=status, username=username, formCompany=formCompany)
+                    cur.execute("insert into company (user_id, inn, company_name) values (%s, %s, %s)",
+                                (userID, inn, companyName,))
+                else:
+                    if inn != '':
+                        cur.execute('update company set inn = %s WHERE user_id = %s', (inn, userID,))
+                    if companyName != '':
+                        cur.execute('update company set company_name = %s WHERE user_id = %s', (companyName, userID,))
+                    if companyPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (companyPhone, userID,))
+                    if companyEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (companyEmail, userID,))
+                conn.commit()
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("profile_edit.html",
+                                       message='Компания с данным ИНН, телефоном или email уже существует!',
+                                       status=status, username=username, formCompany=formCompany)
+            except psycopg2.errors.StringDataRightTruncation:
+                conn.rollback()
+                return render_template("profile_edit.html", message='ИНН должен состоять не более чем из 10 символов!',
+                                       status=status, username=username, formCompany=formCompany)
+            return redirect(url_for('profile', status=status, username=username))
+
+        if status == 'employee' and formEmployee.validate_on_submit():
+            fullName = formEmployee.fullName.data
+            employeePhone = formEmployee.employeePhone.data
+            employeeEmail = formEmployee.employeeEmail.data
+
+            isEmployee = userExist('employee', userID)
+
+            try:
+                if isEmployee == 0:
+                    if fullName == '':
+                        return render_template("profile_edit.html", message='Пожайлуста, введите ФИО', status=status, username=username, formEmployee=formEmployee)
+                    cur.execute("insert into employee (user_id, full_name) values (%s, %s)", (userID, fullName, ))
+                else:
+                    if fullName != '':
+                        cur.execute('update employee set full_name = %s WHERE user_id = %s', (fullName, userID, ))
+                    if employeePhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (employeePhone, userID,))
+                    if employeeEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (employeeEmail, userID,))
                     conn.commit()
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("profile_edit.html", message='Пользователь с данным ИНН, телефоном или email уже существует!', status=status, username=username)
-                except psycopg2.errors.StringDataRightTruncation:
-                    conn.rollback()
-                    return render_template("profile_edit.html", message='ИНН должен состоять не более чем из 10 символов!', status=status, username=username)
-                return redirect(url_for('profile', status=status, username=username))
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("profile_edit.html", message='Соискатель с данным телефоном или email уже существует!', status=status, username=username, formEmployee=formEmployee)
+            return redirect(url_for('profile', status=status, username=username))
 
-        if status == 'employee':
-            if request.method == 'POST':
-                fullName = request.form.get('full_name')
-                employeePhone = request.form.get('employee_phone')
-                employeeEmail = request.form.get('employee_email')
+        if status == 'customer' and formCustomer.validate_on_submit():
+            customerName = formCustomer.customerName.data
+            customerPhone = formCustomer.customerPhone.data
+            customerEmail = formCustomer.customerEmail.data
 
-                isEmployee = userExist('employee', userID)
+            isCustomer = userExist('employee', userID)
 
-                try:
-                    if isEmployee == 0:
-                        if fullName == '':
-                            return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                        cur.execute("insert into employee (user_id, full_name) values (%s, %s)", (userID, fullName, ))
-                    else:
-                        if fullName != '':
-                            cur.execute('update employee set full_name = %s WHERE user_id = %s', (fullName, userID, ))
-                        if employeePhone != '':
-                            cur.execute('update person set phone = %s WHERE user_id = %s', (employeePhone, userID,))
-                        if employeeEmail != '':
-                            cur.execute('update person set email = %s WHERE user_id = %s', (employeeEmail, userID,))
-                        conn.commit()
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username)
-                return redirect(url_for('profile', status=status, username=username))
+            try:
+                if isCustomer == 0:
+                    if customerName == '':
+                        return render_template("profile_edit.html", message='Пожайлуста, введите Ваше имя', status=status, username=username, formCustomer=formCustomer)
+                    cur.execute("insert into customer (user_id, customer_name) values (%s, %s)", (userID, customerName, ))
+                else:
+                    if customerName != '':
+                        cur.execute('update customer set customer_name = %s WHERE user_id = %s', (customerName, userID, ))
+                    if customerPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (customerPhone, userID,))
+                    if customerEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (customerEmail, userID,))
+                    conn.commit()
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("profile_edit.html", message='Заказчик с данным телефоном или email уже существует!', status=status, username=username, formCustomer=formCustomer)
+            return redirect(url_for('profile', status=status, username=username, formCustomer=formCustomer))
 
-        if status == 'customer':
-            if request.method == 'POST':
-                customerName = request.form.get('customer_name')
-                customerPhone = request.form.get('customer_phone')
-                customerEmail = request.form.get('customer_email')
+        if status == 'performer' and formPerformer.validate_on_submit():
+            performerName = formPerformer.performerName.data
+            performerArea = formPerformer.performerArea.data
+            servicesDescr = formPerformer.servicesDescr.data
+            performerPhone = formPerformer.performerPhone.data
+            performerEmail = formPerformer.performerEmail.data
 
-                isCustomer = userExist('employee', userID)
+            isPerformer = userExist('performer', userID)
 
-                try:
-                    if isCustomer == 0:
-                        if customerName == '':
-                            return render_template("profile_edit.html", message='Пожайлуста, заполните все поля')
-                        cur.execute("insert into customer (user_id, customer_name) values (%s, %s)", (userID, customerName, ))
-                    else:
-                        if customerName != '':
-                            cur.execute('update customer set customer_name = %s WHERE user_id = %s', (customerName, userID, ))
-                        if customerPhone != '':
-                            cur.execute('update person set phone = %s WHERE user_id = %s', (customerPhone, userID,))
-                        if customerEmail != '':
-                            cur.execute('update person set email = %s WHERE user_id = %s', (customerEmail, userID,))
-                        conn.commit()
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username)
-                return redirect(url_for('profile', status=status, username=username))
-
-        if status == 'performer':
-            areas = selectColumn('area_name','area')
-
-            if request.method == 'POST':
-                performerName = request.form.get('performer_name')
-                performerArea = request.form.get('performer_area')
-                servicesDescr = request.form.get('services_descr')
-                performerPhone = request.form.get('performer_phone')
-                performerEmail = request.form.get('performer_email')
-
-                isPerformer = userExist('performer', userID)
-
-                try:
-                    if isPerformer == 0:
-                        if performerName == '' or performerArea == '' or servicesDescr == '':
-                            return render_template("profile_edit.html", message='Пожайлуста, заполните все поля', status=status, username=username, areas=areas)
-                        cur.execute("insert into performer (user_id, performer_name, area_name, services_descr) values (%s, %s, %s, %s)", (userID, performerName, performerArea, servicesDescr, ))
-                    else:
-                        if performerName != '':
-                            cur.execute('update performer set performer_name = %s WHERE user_id = %s', (performerName, userID, ))
-                        if performerArea != '':
-                            cur.execute('update performer set area_name = %s WHERE user_id = %s', (performerArea, userID, ))
-                        if servicesDescr != '':
-                            cur.execute('update performer set services_descr = %s WHERE user_id = %s', (servicesDescr, userID, ))
-                        if performerPhone != '':
-                            cur.execute('update person set phone = %s WHERE user_id = %s', (performerPhone, userID,))
-                        if performerEmail != '':
-                            cur.execute('update person set email = %s WHERE user_id = %s', (performerEmail, userID,))
-                        conn.commit()
-                except psycopg2.errors.UniqueViolation:
-                    conn.rollback()
-                    return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, areas=areas)
-                return redirect(url_for('profile', status=status, username=username))
-            return render_template("profile_edit.html", status=status, username=username, areas=areas)
+            try:
+                if isPerformer == 0:
+                    if performerName == '' or performerArea == '' or servicesDescr == '':
+                        return render_template("profile_edit.html",
+                                               message='Пожайлуста, введите Ваше имя, сферу деятельности и описание услуг',
+                                               status=status, username=username, formPerformer=formPerformer)
+                    cur.execute("insert into performer (user_id, performer_name, area_name, services_descr) values (%s, %s, %s, %s)", (userID, performerName, performerArea, servicesDescr, ))
+                else:
+                    if performerName != '':
+                        cur.execute('update performer set performer_name = %s WHERE user_id = %s', (performerName, userID, ))
+                    if performerArea != '':
+                        cur.execute('update performer set area_name = %s WHERE user_id = %s', (performerArea, userID, ))
+                    if servicesDescr != '':
+                        cur.execute('update performer set services_descr = %s WHERE user_id = %s', (servicesDescr, userID, ))
+                    if performerPhone != '':
+                        cur.execute('update person set phone = %s WHERE user_id = %s', (performerPhone, userID,))
+                    if performerEmail != '':
+                        cur.execute('update person set email = %s WHERE user_id = %s', (performerEmail, userID,))
+                    conn.commit()
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()
+                return render_template("profile_edit.html", message='Исполнитель с данным телефоном или email уже существует!', status=status, username=username, formPerformer=formPerformer)
+            return redirect(url_for('profile', status=status, username=username))
+        return render_template("profile_edit.html", status=status, username=username, formPerformer=formPerformer, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
     return render_template("profile_edit.html", status=status, username=username)
 
 # добавление записи
