@@ -67,15 +67,12 @@ def login():
     if form.validate_on_submit():
         session.pop('user', None)
 
-        username = form.username.data
+        username = form.login.data
         password = form.password.data
-
-        if username == '' or password == '':
-            return render_template("login.html", message='Пожайлуста, заполните все поля!')
 
         cur.execute('SELECT user_id, password, status FROM person WHERE login = %s', (username, ))
         if cur.rowcount == 0:
-            return render_template("login.html", message='Пользователя с данным логином не существует!')
+            return render_template("login.html", message='Пользователя с данным логином не существует!', form=form)
         result = cur.fetchone()
         user_id = result[0]
         passwordHash = result[1]
@@ -88,7 +85,7 @@ def login():
 
         resultHash = check_password_hash(passwordHash, password)
         if not resultHash:
-            return render_template("login.html", message='Введен неправильный пароль!')
+            return render_template("login.html", message='Введен неправильный пароль!', form=form)
 
         session['user'] = user_id
         return redirect(url_for('profile', status=status, username=username))

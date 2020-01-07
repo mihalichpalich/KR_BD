@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field %}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Авторизация{% endblock title %}
@@ -9,27 +10,8 @@
                 <form action="{{ url_for('login') }}" method="POST">
                     {{ form.csrf_token }}
 
-                    <div class="form-group">
-                        <label for="login">Login</label>
-                        {{ form.username }}
-                    </div>
-
-                    <ul>
-                        {% for error in form.username.errors %}
-                            <li class="text-danger">{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        {{ form.password }}
-                    </div>
-
-                    <ul>
-                        {% for error in form.password.errors %}
-                            <li class="text-danger">{{ error }}</li>
-                        {% endfor %}
-                    </ul>
+                    {{ render_field(form.login, placeholder=form.login.label.text)}}
+                    {{ render_field(form.password, placeholder=form.password.label.text)}}
 
                     <div class="row justify-content-end form-group">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Войти</button>
@@ -38,6 +20,10 @@
 
                 <a href="{{ url_for('pwRec') }}">Забыли пароль?</a><br>
                 <a href="{{ url_for('signUp') }}">Зарегистрироваться</a>
+
+                {% if message %}
+                    <p class="text-danger">{{ message }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
