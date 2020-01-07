@@ -9,3 +9,14 @@
         </ul>
     </div>
 {% endmacro %}
+
+{% macro render_radio_field(field) %}
+    <div class="btn-group btn-group-toggle form-group" data-toggle="buttons">
+        {% for subfield in field %}
+            <label class="btn btn-secondary">
+                {{ subfield }}
+                {{ subfield.label.text }}
+            </label>
+        {% endfor %}
+    </div>
+{% endmacro %}

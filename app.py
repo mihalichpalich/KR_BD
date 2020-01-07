@@ -27,17 +27,14 @@ def index():
 # регистрация
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signUp():
-    if request.method == 'POST':
-        login = request.form.get('username')
-        password = request.form.get('password')
-        status = request.form.get('status')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
+    form = SignUpForm()
 
-        if login == '' or password == '' or email == '' or phone == '':
-            return render_template("sign_up.html", message='Пожайлуста, заполните все поля')
-        elif status == '':
-            return render_template("sign_up.html", message='Пожайлуста, выберите свой статус')
+    if form.validate_on_submit():
+        login = form.login.data
+        password = form.password.data
+        status = form.status.data
+        email = form.email.data
+        phone = form.phone.data
 
         passwordHash = generate_password_hash(password)
 
@@ -47,14 +44,10 @@ def signUp():
             return redirect(url_for('success'))
         except psycopg2.errors.UniqueViolation:
             conn.rollback()
-            return render_template("sign_up.html", message='Пользователь с данным логином, email или телефоном уже существует!')
-        except psycopg2.errors.StringDataRightTruncation:
-            conn.rollback()
-            return render_template("sign_up.html", message='Логин должен состоять не более чем из 15 символов!')
-    return render_template("sign_up.html")
+            return render_template("sign_up.html", message='Пользователь с данным логином, email или телефоном уже существует!', form=form)
+    return render_template("sign_up.html", form=form)
 
 # успешная регистрация
-# убрать метод get когда все будет готово
 @app.route('/success', methods=['GET', 'POST'])
 def success():
     return render_template("success.html")

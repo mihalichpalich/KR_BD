@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field, render_radio_field %}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Регистрация{% endblock title %}
@@ -7,40 +8,14 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <form action="{{ url_for('signUp') }}" method="POST">
-                    <div class="form-group">
-                        <label for="login">Login</label>
-                        <input type="text" name="username" class="form-control" id="login" placeholder="Login">
-                    </div>
+                    {{ form.csrf_token }}
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" class="form-control" id="password" placeholder="Password">
-                    </div>
+                    {{ render_field(form.login, placeholder=form.login.label.text)}}
+                    {{ render_field(form.password, placeholder=form.password.label.text)}}
+                    {{ render_field(form.email, placeholder=form.email.label.text)}}
+                    {{ render_field(form.phone, placeholder=form.phone.label.text)}}
 
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" name="email" class="form-control" id="email" placeholder="Email">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone">Телефон</label>
-                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone">
-                    </div>
-
-                    <div class="btn-group btn-group-toggle form-group" data-toggle="buttons">
-                        <label class="btn btn-secondary">
-                            <input type="radio" name="status" id="status1" autocomplete="off" value="company">Работодатель
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="radio" name="status" id="status2" autocomplete="off" value="employee">Соискатель
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="radio" name="status" id="status3" autocomplete="off" value="customer">Заказчик
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="radio" name="status" id="status4" autocomplete="off" value="performer">Исполнитель
-                        </label>
-                    </div>
+                    {{ render_radio_field(form.status) }}
 
                     <div class="row justify-content-end">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Регистрация</button>
