@@ -85,30 +85,34 @@ def login():
     return render_template("login.html", form=form)
 
 # восстановление пароля
-@app.route('/pw_rec')
+@app.route('/pw_rec', methods=['GET', 'POST'])
 def pwRec():
-    return render_template("pw_rec.html")
+    form = PwRecForm()
+
+    if form.validate_on_submit():
+        login = form.login.data
+        passwordOld = form.passwordOld.data
+        passwordNew = form.passwordNew.data
+
+        cur.execute('SELECT * FROM person WHERE login = %s', (login, ))
+        if cur.rowcount == 0:
+            return render_template("pw_rec.html", message='Пользователя с данным логином не существует!', form=form)
+        conn.commit()
+
+        if passwordOld != passwordNew:
+            return render_template("pw_rec.html", message='Пароли не совпадают!', form=form)
+
+        passwordHash = generate_password_hash(passwordNew)
+
+        cur.execute('update person set password = %s WHERE login = %s', (passwordHash, login, ))
+        conn.commit()
+
+        return redirect(url_for('pwRecSuc'))
+    return render_template("pw_rec.html", form=form)
 
 # успешное восстановление пароля
 @app.route('/pw_rec_suc', methods=['GET', 'POST'])
 def pwRecSuc():
-    if request.method == 'POST':
-        login = request.form.get('username')
-        password1 = request.form.get('password1')
-        password2 = request.form.get('password2')
-
-        cur.execute('SELECT * FROM person WHERE login = %s', (login, ))
-        if cur.rowcount == 0:
-            return render_template("pw_rec.html", message='Пользователя с данным логином не существует!')
-        conn.commit()
-
-        if password1 != password2:
-            return render_template("pw_rec.html", message='Пароли не совпадают!')
-
-        passwordHash = generate_password_hash(password2)
-
-        cur.execute('update person set password = %s WHERE login = %s', (passwordHash, login, ))
-        conn.commit()
     return render_template("pw_rec_suc.html")
 
 # страница профиля

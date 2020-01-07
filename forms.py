@@ -12,3 +12,8 @@ class SignUpForm(FlaskForm):
 class LoginForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин')])
     password = PasswordField('Пароль', validators=[InputRequired('Не введен пароль')])
+
+class PwRecForm(FlaskForm):
+    login = StringField('Введите логин: ', validators=[InputRequired('Не введен логин')])
+    passwordOld = PasswordField('Введите новый пароль: ', validators=[InputRequired('Не введен пароль')])
+    passwordNew = PasswordField('Введите новый пароль еще раз: ', validators=[InputRequired('Не введен пароль')])
