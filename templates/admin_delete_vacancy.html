@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Удаление вакансий{% endblock title %}
@@ -7,20 +8,12 @@
         <div class="row justify-content-center">
             <div class="col-xs-3">
                 <p>Удаление вакансий, опубликованных раньше введенной даты</p>
-                <p>Введите дату в формате ЧЧ.ММ.ГГГГ</p>
+                <p>Введите дату в формате ГГГГ-ММ-ДД<</p>
 
                 <form action="{{ url_for('adminDeleteVacancy') }}" class="form-inline" method="POST">
-                    <div class="form-group">
-                        <input type="text" name="day" class="form-control" id="day" placeholder="ЧЧ">
-                    </div>
+                    {{ form.csrf_token }}
 
-                    <div class="form-group">
-                        <input type="text" name="month" class="form-control" id="month" placeholder="ММ">
-                    </div>
-
-                    <div class="form-group">
-                        <input type="text" name="year" class="form-control" id="year" placeholder="ГГГГ">
-                    </div>
+                    {{ render_field(form.date)}}
 
                     <button type="submit" class="btn btn-primary">Удалить</button>
                 </form>
@@ -28,7 +21,7 @@
                 <a href="{{ url_for('admin') }}">Назад</a><br>
 
                 {% if message %}
-                    <p class="text-danger">{{ message }}</p>
+                    <p class="text-success">{{ message }}</p>
                 {% endif %}
             </div>
         </div>

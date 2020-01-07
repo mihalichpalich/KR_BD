@@ -858,7 +858,7 @@ def adminDataIndEdit():
     if g.user:
         industries = selectColumn('industry_name', 'industry')
 
-        if request.method == 'POST':
+        if form.validate_on_submit():
             industryOld = form.industryOld.data
             industryNew = form.industryNew.data
             try:
@@ -880,7 +880,7 @@ def adminDataAreasAdd():
     if g.user:
         areas = selectColumn('area_name', 'area')
 
-        if request.method == 'POST':
+        if form.validate_on_submit():
             area = form.area.data
 
             try:
@@ -900,7 +900,7 @@ def adminDataAreasEdit():
     if g.user:
         areas = selectColumn('area_name', 'area')
 
-        if request.method == 'POST':
+        if form.validate_on_submit():
             areaOld = form.areaOld.data
             areaNew = form.areaNew.data
 
@@ -917,68 +917,41 @@ def adminDataAreasEdit():
 # удаление резюме
 @app.route('/admin_delete_cv', methods=['GET', 'POST'])
 def adminDeleteCv():
-    if g.user:
-        if request.method == 'POST':
-            day = request.form.get('day')
-            month = request.form.get('month')
-            year = request.form.get('year')
+    form = DateForm()
 
-            try:
-                dayNum = int(day)
-                monthNum = int(month)
-                yearNum = int(year)
-            except ValueError:
-                return render_template("admin_delete_cv.html", message="Введено не целочисленное значение!")
+    if g.user and form.validate_on_submit():
+        date = form.date.data
 
-            dateInput = date(yearNum, monthNum, dayNum)
-
-            cur.execute('delete from cv where cv_pub_data::date < %s::date', (dateInput,))
-            conn.commit()
-        return render_template("admin_delete_cv.html")
+        cur.execute('delete from cv where cv_pub_data::date < %s::date', (date,))
+        conn.commit()
+        return render_template("admin_delete_cv.html", form=form, message="Данные успешно удалены!")
+    return render_template("admin_delete_cv.html", form=form)
 
 # удаление вакансий
 @app.route('/admin_delete_vacancy', methods=['GET', 'POST'])
 def adminDeleteVacancy():
-    if g.user:
-        if request.method == 'POST':
-            day = request.form.get('day')
-            month = request.form.get('month')
-            year = request.form.get('year')
+    form = DateForm()
 
-            try:
-                dayNum = int(day)
-                monthNum = int(month)
-                yearNum = int(year)
-            except ValueError:
-                return render_template("admin_delete_vacancy.html", message="Введено не целочисленное значение!")
+    if g.user and form.validate_on_submit():
+        date = form.date.data
 
-            dateInput = date(yearNum, monthNum, dayNum)
-
-            cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (dateInput,))
-            conn.commit()
-        return render_template("admin_delete_vacancy.html")
+        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (date,))
+        conn.commit()
+        return render_template("admin_delete_vacancy.html", form=form, message="Данные успешно удалены!")
+    return render_template("admin_delete_vacancy.html", form=form)
 
 # удаление заданий
 @app.route('/admin_delete_task', methods=['GET', 'POST'])
 def adminDeleteTask():
-    if g.user:
-        if request.method == 'POST':
-            day = request.form.get('day')
-            month = request.form.get('month')
-            year = request.form.get('year')
+    form = DateForm()
 
-            try:
-                dayNum = int(day)
-                monthNum = int(month)
-                yearNum = int(year)
-            except ValueError:
-                return render_template("admin_delete_task.html", message="Введено не целочисленное значение!")
+    if g.user and form.validate_on_submit():
+        date = form.date.data
 
-            dateInput = date(yearNum, monthNum, dayNum)
-
-            cur.execute('delete from task where exec_date::date < %s::date', (dateInput,))
-            conn.commit()
-        return render_template("admin_delete_task.html")
+        cur.execute('delete from task where exec_date::date < %s::date', (date,))
+        conn.commit()
+        return render_template("admin_delete_task.html", form=form, message="Данные успешно удалены!")
+    return render_template("admin_delete_task.html", form=form)
 
 if __name__ == '__main__':
     app.run(debug=True)

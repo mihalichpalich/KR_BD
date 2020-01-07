@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, RadioField
-from wtforms.validators import InputRequired, Length
+from wtforms import StringField, PasswordField, RadioField, DateField
+from wtforms.validators import InputRequired, Length, DataRequired
 
 class SignUpForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов')])
@@ -32,3 +32,6 @@ class AreasAddForm(FlaskForm):
 class AreasEditForm(FlaskForm):
     areaOld = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности')])
     areaNew = StringField('Введите новое название: ', validators=[InputRequired('Не введена сфера деятельности')])
+
+class DateForm(FlaskForm):
+    date = DateField('', format='%Y-%m-%d', validators=[DataRequired('Дата введена в неправильном формате!')])
