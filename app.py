@@ -209,7 +209,7 @@ def profileEdit(status, username):
     if companyInfo:
         formCompany = ProfEdCompanyForm(inn=companyInfo[0], companyName=companyInfo[1], companyEmail=contacts[0], companyPhone=contacts[1])
     else:
-        formCompany = []
+        formCompany = ProfEdCompanyForm(companyEmail=contacts[0], companyPhone=contacts[1])
 
     formEmployee = ProfEdEmployeeForm(fullName=employeeInfo, employeeEmail=contacts[0], employeePhone=contacts[1])
     formCustomer = ProfEdCustomerForm(customerName=customerInfo, customerEmail=contacts[0], customerPhone=contacts[1])
@@ -217,7 +217,7 @@ def profileEdit(status, username):
     if performerInfo:
         formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2], performerEmail=contacts[0], performerPhone=contacts[1])
     else:
-        formPerformer = []
+        formPerformer = ProfEdPerformerForm(performerEmail=contacts[0], performerPhone=contacts[1])
 
     if g.user:
         if status == 'company' and formCompany.validate_on_submit():
@@ -367,6 +367,12 @@ def createItem(status, username):
             if minExp == 0:
                 minExp = 'без опыта'
 
+            cur.execute('SELECT * FROM industry_profession WHERE industry_name = %s and profession_name = %s', (industryName, professionName,))
+            result = cur.fetchone()
+            if result is None:
+                return render_template("create_item.html", message='Выбранная должность не соответствует выбранной отрасли!', status=status,
+                                       username=username, formCompany=formCompany)
+
             try:
                 cur.execute(
                     "insert into vacancy (user_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -394,6 +400,13 @@ def createItem(status, username):
                 maxSalary = None
             if exp == 0:
                 exp = 'без опыта'
+
+            cur.execute('SELECT * FROM industry_profession WHERE industry_name = %s and profession_name = %s', (industryName, professionName,))
+            result = cur.fetchone()
+            if result is None:
+                return render_template("create_item.html",
+                                       message='Выбранная должность не соответствует выбранной отрасли!', status=status,
+                                       username=username, formEmployee=formEmployee)
 
             try:
                 cur.execute(
@@ -507,6 +520,15 @@ def editItem(status, username, itemid):
                 if minExp == 0:
                     minExp = 'без опыта'
 
+                cur.execute('SELECT * FROM industry_profession WHERE industry_name = %s and profession_name = %s',
+                            (industryName, professionName,))
+                result = cur.fetchone()
+                if result is None:
+                    return render_template("edit_item.html",
+                                           message='Выбранная должность не соответствует выбранной отрасли!',
+                                           status=status,
+                                           username=username, formCompany=formCompany)
+
                 if industryName != None:
                     cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, itemid,))
                 if professionName != None:
@@ -558,6 +580,15 @@ def editItem(status, username, itemid):
                     maxSalary = None
                 if exp == 0:
                     exp = 'без опыта'
+
+                cur.execute('SELECT * FROM industry_profession WHERE industry_name = %s and profession_name = %s',
+                            (industryName, professionName,))
+                result = cur.fetchone()
+                if result is None:
+                    return render_template("edit_item.html",
+                                           message='Выбранная должность не соответствует выбранной отрасли!',
+                                           status=status,
+                                           username=username, formEmployee=formEmployee)
 
                 if industryName != None:
                     cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid,))
@@ -871,6 +902,7 @@ def taskCatItem(itemid):
 def perfCatAreas(username):
     if g.user:
         counts = []
+        areasURL = []
 
         cur.execute('SELECT area_name FROM area WHERE area_name in (select area_name from performer)')
         areas = cur.fetchall()
@@ -886,19 +918,25 @@ def perfCatAreas(username):
 
         counts = list(sum(counts, ()))
 
-        data = list(zip(areas, counts))
+        for item in areas:
+            itemUni = translitToURL(item)
+            areasURL.append(itemUni)
+
+        data = list(zip(areas, counts, areasURL))
     return render_template("perf_cat_areas.html", username=username, data=data)
 
 # список исполнителей
-@app.route('/perf_cat_list/<username>/<area>')
-def perfCatList(username, area):
+@app.route('/perf_cat_list/<username>/<areaURL>')
+def perfCatList(username, areaURL):
+    area = translitFromURL(areaURL)
+
     cur.execute('SELECT * FROM performer WHERE area_name = %s', (area,))
     perfInfo = cur.fetchall()
     conn.commit()
-    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, area=area)
+    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, areaURL=areaURL)
 
 # исполнитель полностью
-@app.route('/perf_cat_item/<username>/<itemid>')
+@app.route('/perf_cat_item/<username>/<itemid>', methods=['GET', 'POST'])
 def perfCatItem(username, itemid):
     cur.execute('SELECT * FROM performer WHERE user_id = %s', (itemid,))
     result = cur.fetchall()

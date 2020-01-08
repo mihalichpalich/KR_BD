@@ -16,7 +16,7 @@
                             <p><strong>Сфера деятельности: </strong>{{ item[2] }}</p>
                             <p><strong>Описание услуг: </strong>{{ item[3] }}</p>
 
-                            <form action="{{ url_for('perfCatItem', itemid=item[0], area=area, username=username) }}" method="GET">
+                            <form action="{{ url_for('perfCatItem', itemid=item[0], username=username) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>
