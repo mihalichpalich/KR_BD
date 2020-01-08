@@ -331,42 +331,40 @@ def profileEdit(status, username):
 # добавление записи
 @app.route('/create_item/<status>/<username>', methods=['GET', 'POST'])
 def createItem(status, username):
-    industries = selectColumn('industry_name', 'industry')
-    professions = selectColumn('profession_name', 'profession')
     areas = selectColumn('area_name', 'area')
+
+    formCompany = CreateItemCompanyForm()
 
     if g.user:
         userID = getUserID(username)
 
-        if status == 'company':
-            if request.method == 'POST':
-                industryName = request.form.get('industry_name')
-                professionName = request.form.get('profession_name')
-                employeeSex = request.form.get('employee_sex')
-                minEmpAge = request.form.get('min_emp_age')
-                maxEmpAge = request.form.get('max_emp_age')
-                minSalary = request.form.get('min_salary')
-                minExp = request.form.get('min_exp')
-                empType = request.form.get('emp_type')
+        if status == 'company' and formCompany.validate_on_submit():
+            industryName = formCompany.industryName.data
+            professionName = formCompany.professionName.data
+            employeeSex = formCompany.employeeSex.data
+            minEmpAge = formCompany.minEmpAge.data
+            maxEmpAge = formCompany.maxEmpAge.data
+            minSalary = formCompany.minSalary.data
+            minExp = formCompany.minExp.data
+            empType = formCompany.empType.data
 
-                vacPubData = date.today()
+            vacPubData = date.today()
 
-                if maxEmpAge == '':
-                    maxEmpAge = None
+            if maxEmpAge == '':
+                maxEmpAge = None
+            if minExp == 0:
+                minExp = 'без опыта'
 
-                try:
-                    if industryName == '' or professionName == '' or minEmpAge == '' or minSalary == '' or minExp == '' or empType == '':
-                        return render_template("create_item.html", message='Пожайлуста, заполните все поля', status=status, username=username, industries=industries, professions=professions)
-                    else:
-                        cur.execute(
-                            "insert into vacancy (user_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                            (userID, industryName, professionName, employeeSex, minEmpAge,
-                             maxEmpAge, minSalary, minExp, empType, vacPubData))
-                        conn.commit()
-                except psycopg2.errors.InvalidTextRepresentation:
-                    conn.rollback()
-                    return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, industries=industries, professions=professions)
-                return redirect(url_for('itemList', status=status, username=username))
+            try:
+                cur.execute(
+                    "insert into vacancy (user_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (userID, industryName, professionName, employeeSex, minEmpAge,
+                     maxEmpAge, minSalary, minExp, empType, vacPubData))
+                conn.commit()
+            except psycopg2.errors.InvalidTextRepresentation:
+                conn.rollback()
+                return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, formCompany=formCompany)
+            return redirect(url_for('itemList', status=status, username=username))
 
         if status == 'employee':
             if request.method == 'POST':
@@ -386,9 +384,7 @@ def createItem(status, username):
 
                 try:
                     if industryName == '' or professionName == '' or exp == '' or empType == '':
-                        return render_template("create_item.html", message='Пожайлуста, заполните все поля',
-                                           status=status, username=username, industries=industries,
-                                           professions=professions)
+                        return render_template("create_item.html", message='Пожайлуста, заполните все поля', status=status, username=username)
                     else:
                         cur.execute(
                         "insert into cv (user_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s)",
@@ -396,9 +392,7 @@ def createItem(status, username):
                         conn.commit()
                 except psycopg2.errors.InvalidTextRepresentation:
                     conn.rollback()
-                    return render_template("create_item.html", message='В численные поля записан текст!',
-                                           status=status, username=username, industries=industries,
-                                           professions=professions)
+                    return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username)
                 return redirect(url_for('itemList', status=status, username=username))
 
         if status == 'customer':
@@ -439,7 +433,7 @@ def createItem(status, username):
                     return render_template("create_item.html", message='В численные поля записан текст!',
                                            status=status, username=username, areas=areas)
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("create_item.html", status=status, username=username, industries=industries, professions=professions, areas=areas)
+    return render_template("create_item.html", status=status, username=username, areas=areas, formCompany=formCompany)
 
 # список записей
 @app.route('/item_list/<status>/<username>')

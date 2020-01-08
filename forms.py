@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, RadioField, DateField, SelectField
-from wtforms.validators import InputRequired, Length, DataRequired
+from wtforms import StringField, PasswordField, RadioField, DateField, SelectField, IntegerField
+from wtforms.validators import InputRequired, Length, DataRequired, Optional
 
 from functions import *
 
@@ -60,10 +60,31 @@ class ProfEdPerformerForm(FlaskForm):
     areas = selectColumn('area_name', 'area')
     for i in areas:
         areasSelect.append((i, i))
-    areasSelect.append(('', ''))
+    areasSelect.insert(0, ('', ''))
 
     performerName = StringField('Имя: ')
-    performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect)
+    performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect, default='')
     servicesDescr = StringField('О своей деятельности:  ')
     performerPhone = StringField('Телефон: ')
     performerEmail = StringField('e-mail: ')
+
+class CreateItemCompanyForm(FlaskForm):
+    industriesSelect = []
+    professionsSelect = []
+
+    industries = selectColumn('industry_name', 'industry')
+    professions = selectColumn('profession_name', 'profession')
+
+    for i in industries:
+        industriesSelect.append((i, i))
+    for i in professions:
+        professionsSelect.append((i, i))
+
+    industryName = SelectField('Выберите отрасль*: ', choices=industriesSelect)
+    professionName = SelectField('Выберите должность*: ', choices=professionsSelect)
+    employeeSex = SelectField('Выберите пол соискателя: ', choices=[('', ''), ('мужской', 'мужской'), ('женский', 'женский')], default='')
+    minEmpAge = StringField('Минимальный возраст соискателя, лет (числом)*: ', validators=[InputRequired('Не введен минимальный возраст соискателя')])
+    maxEmpAge = StringField('Максимальный возраст соискателя, лет (числом): ')
+    minSalary = StringField('Минимальная заработная плата, руб (числом)*: ', validators=[InputRequired('Не введена минимальная заработная плата')])
+    minExp = IntegerField('Минимальный опыт работы, лет (числом, если без опыта, то 0)*: ', validators=[Optional(strip_whitespace=False), InputRequired('Не введен минимальный опыт работы')])
+    empType = SelectField('Выберите тип занятости: ', choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'), ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
