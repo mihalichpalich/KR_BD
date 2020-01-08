@@ -17,7 +17,7 @@
                             <p><strong>Дата выполнения: </strong>{{ item[3] }}</p>
                             <p><strong>Стоимость: </strong>{{ item[4] }} руб.</p>
 
-                            <form action="{{ url_for('taskCatItem', itemid=item[0], area=area, username=username) }}" method="GET">
+                            <form action="{{ url_for('taskCatItem', itemid=item[0], areaURL=areaURL) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>

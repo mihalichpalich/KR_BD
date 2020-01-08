@@ -9,7 +9,7 @@
         </div>
         <div class="row">
             <div class="col-lg-5">
-                <div class="card"">
+                <div class="card">
                     <div class="card-body">
                         <p><strong>Отрасль: </strong>{{ vacancyInfo[1] }}</p>
                         <p><strong>Должность: </strong>{{ vacancyInfo[2] }}</p>
@@ -21,7 +21,7 @@
                         <p><strong>Минимальный возраст соискателя: </strong>{{ vacancyInfo[4] }}</p>
 
                         {% if vacancyInfo[5] is not none %}
-                            <p><strong>Максимальный возраст соискателя: </strong>{{ item[5] }}</p>
+                            <p><strong>Максимальный возраст соискателя: </strong>{{ vacancyInfo[5] }}</p>
                         {% endif %}
 
                         <p><strong>Минимальная заработная плата: </strong>{{ vacancyInfo[6] }} руб.</p>
@@ -33,7 +33,7 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="card"">
+                <div class="card">
                     <div class="card-body">
                         <p><strong>Название фирмы: </strong>{{ companyName }}</p>
                         <p><strong>email: </strong>{{ contacts[0] }}</p>

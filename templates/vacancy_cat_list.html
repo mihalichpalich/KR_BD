@@ -30,7 +30,7 @@
                             <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
                             <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
 
-                            <form action="{{ url_for('vacCatItem', itemid=item[0], industry=industry, profession=profession) }}" method="GET">
+                            <form action="{{ url_for('vacCatItem', itemid=item[0], industryURL=industryURL, professionURL=professionURL) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>

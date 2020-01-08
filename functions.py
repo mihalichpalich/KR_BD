@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 from werkzeug.security import generate_password_hash, check_password_hash
+from transliterate import translit, get_available_language_codes
 
 conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
 cur = conn.cursor()
@@ -36,7 +37,7 @@ def createDatabase():
             "CREATE TABLE if not exists cv (cv_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, min_salary text, max_salary text, exp text not null, emp_type text not null, cv_pub_data text not null);")
         conn.commit()
         cur.execute(
-            "CREATE TABLE if not exists browsing (user_id int not null, cv_id int not null, view_data text not null, foreign key (user_id) references company on delete cascade, foreign key (cv_id) references cv on delete cascade);")
+            "CREATE TABLE if not exists browsing (browsing_id serial primary key, user_id int not null, cv_id int not null, view_data text not null, foreign key (user_id) references company on delete cascade, foreign key (cv_id) references cv on delete cascade);")
         conn.commit()
         cur.execute(
             "CREATE TABLE if not exists task (task_id serial primary key, user_id int references person on delete cascade , area_name text not null references area on update cascade, task_descr text not null, exec_date text not null, price int not null);")
@@ -101,3 +102,15 @@ def getUserID(name):
         ID = result[0]
     conn.commit()
     return ID
+
+def translitToURL(data):
+    dataUni = translit(data, 'ru', reversed=True)
+    dataURL = "_".join(dataUni.split())
+    dataURLLow = dataURL.lower()
+    return dataURLLow
+
+def translitFromURL(data):
+    dataURL = translit(data, 'ru')
+    dataURL = dataURL.capitalize()
+    dataRus = dataURL.replace('~', ' ')
+    return dataRus

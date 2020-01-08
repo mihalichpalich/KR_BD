@@ -10,7 +10,7 @@
         {% for item in data %}
             <div class="row">
                 <div class="col-xs-3">
-                    <p><a href="{{ url_for('cvCatPro', username=username, industry=item[0]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
+                    <p><a href="{{ url_for('cvCatPro', username=username, industryURL=item[2]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
                 </div>
             </div>
         {% endfor %}

@@ -632,6 +632,7 @@ def deleteItem(status, username, itemid):
 def cvCatInd(username):
     if g.user:
         counts = []
+        industriesURL = []
 
         cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from cv) group by industry_name')
         industries = cur.fetchall()
@@ -647,16 +648,22 @@ def cvCatInd(username):
 
         counts = list(sum(counts, ()))
 
-        data = list(zip(industries, counts))
+        for item in industries:
+            itemUni = translitToURL(item)
+            industriesURL.append(itemUni)
+
+        data = list(zip(industries, counts, industriesURL))
     return render_template("cv_cat_ind.html", username=username, data=data)
 
 # должности
-@app.route('/cv_cat_pro/<username>/<industry>')
-def cvCatPro(username, industry):
+@app.route('/cv_cat_pro/<username>/<industryURL>')
+def cvCatPro(username, industryURL):
     if g.user:
         counts = []
+        professionsURL = []
+        industry = translitFromURL(industryURL)
 
-        cur.execute('SELECT profession_name FROM industry_profession WHERE industry_name = %s group by profession_name', (industry,))
+        cur.execute('SELECT profession_name FROM industry_profession WHERE profession_name in (select profession_name from cv where industry_name = %s)', (industry,))
         professions = cur.fetchall()
         conn.commit()
 
@@ -670,30 +677,36 @@ def cvCatPro(username, industry):
 
         counts = list(sum(counts, ()))
 
-        data = list(zip(professions, counts))
-    return render_template("cv_cat_pro.html", username=username, data=data, industry=industry)
+        for item in professions:
+            itemUni = translitToURL(item)
+            professionsURL.append(itemUni)
+
+        data = list(zip(professions, counts, professionsURL))
+    return render_template("cv_cat_pro.html", username=username, data=data, industryURL=industryURL)
 
 # список резюме
-@app.route('/cv_cat_list/<username>/<industry>/<profession>')
-def cvCatList(username, industry, profession):
+@app.route('/cv_cat_list/<username>/<industryURL>/<professionURL>')
+def cvCatList(username, industryURL, professionURL):
     userID = getUserID(username)
+    industry = translitFromURL(industryURL)
+    profession = translitFromURL(professionURL)
 
     if g.user:
         cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         cvInfo = cur.fetchall()
         conn.commit()
-    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industry=industry, profession=profession)
+    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industryURL=industryURL, professionURL=professionURL)
 
 # резюме полностью
-@app.route('/cv_cat_item/<industry>/<profession>/<userid>/<itemid>')
-def cvCatItem(userid, itemid, industry, profession):
+@app.route('/cv_cat_item/<industryURL>/<professionURL>/<userid>/<itemid>', methods=['GET', 'POST'])
+def cvCatItem(userid, itemid, industryURL, professionURL):
     if g.user:
         data = date.today()
 
         cur.execute("insert into browsing (user_id, cv_id, view_data) values (%s, %s, %s)", (userid, itemid, data))
         conn.commit()
 
-        cur.execute('SELECT * FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
+        cur.execute('SELECT * FROM cv WHERE cv_id = %s', (itemid,))
         result = cur.fetchall()
         cvInfo = list(sum(result, ()))
         conn.commit()
@@ -714,6 +727,7 @@ def cvCatItem(userid, itemid, industry, profession):
 @app.route('/vacancy_cat_ind/')
 def vacCatInd():
     counts = []
+    industriesURL = []
 
     cur.execute('SELECT industry_name FROM industry_profession WHERE industry_name in (select industry_name from vacancy) group by industry_name')
     industries = cur.fetchall()
@@ -729,15 +743,21 @@ def vacCatInd():
 
     counts = list(sum(counts, ()))
 
-    data = list(zip(industries, counts))
+    for item in industries:
+        itemUni = translitToURL(item)
+        industriesURL.append(itemUni)
+
+    data = list(zip(industries, counts, industriesURL))
     return render_template("vacancy_cat_ind.html", data=data)
 
 # должности
-@app.route('/vacancy_cat_pro/<industry>')
-def vacCatPro(industry):
+@app.route('/vacancy_cat_pro/<industryURL>')
+def vacCatPro(industryURL):
     counts = []
+    professionsURL = []
+    industry = translitFromURL(industryURL)
 
-    cur.execute('SELECT profession_name FROM industry_profession WHERE industry_name = %s group by profession_name', (industry,))
+    cur.execute('SELECT profession_name FROM industry_profession WHERE profession_name in (select profession_name from vacancy where industry_name = %s)', (industry,))
     professions = cur.fetchall()
     conn.commit()
 
@@ -751,20 +771,27 @@ def vacCatPro(industry):
 
     counts = list(sum(counts, ()))
 
-    data = list(zip(professions, counts))
-    return render_template("vacancy_cat_pro.html", data=data, industry=industry)
+    for item in professions:
+        itemUni = translitToURL(item)
+        professionsURL.append(itemUni)
+
+    data = list(zip(professions, counts, professionsURL))
+    return render_template("vacancy_cat_pro.html", data=data, industryURL=industryURL)
 
 # список вакансий
-@app.route('/vacancy_cat_list/<industry>/<profession>')
-def vacCatList(industry, profession):
+@app.route('/vacancy_cat_list/<industryURL>/<professionURL>')
+def vacCatList(industryURL, professionURL):
+    industry = translitFromURL(industryURL)
+    profession = translitFromURL(professionURL)
+
     cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE industry_name = %s and profession_name = %s', (industry, profession))
     vacancyInfo = cur.fetchall()
     conn.commit()
-    return render_template("vacancy_cat_list.html", vacancyInfo=vacancyInfo, industry=industry, profession=profession)
+    return render_template("vacancy_cat_list.html", vacancyInfo=vacancyInfo, industryURL=industryURL, professionURL=professionURL)
 
 # вакансия полностью
-@app.route('/vacancy_cat_item/<industry>/<profession>/<itemid>')
-def vacCatItem(itemid, industry, profession):
+@app.route('/vacancy_cat_item/<industryURL>/<professionURL>/<itemid>', methods=['GET', 'POST'])
+def vacCatItem(itemid, industryURL, professionURL):
     cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE vacancy_id = %s', (itemid))
     result = cur.fetchall()
     vacancyInfo = list(sum(result , ()))
@@ -786,6 +813,7 @@ def vacCatItem(itemid, industry, profession):
 @app.route('/task_cat_areas/')
 def taskCatAreas():
     counts = []
+    areasURL = []
 
     cur.execute('SELECT area_name FROM area WHERE area_name in (select area_name from task) group by area_name')
     areas = cur.fetchall()
@@ -801,19 +829,25 @@ def taskCatAreas():
 
     counts = list(sum(counts, ()))
 
-    data = list(zip(areas, counts))
+    for item in areas:
+        itemUni = translitToURL(item)
+        areasURL.append(itemUni)
+
+    data = list(zip(areas, counts, areasURL))
     return render_template("task_cat_areas.html", data=data)
 
 # список заданий
-@app.route('/task_cat_list/<area>')
-def taskCatList(area):
+@app.route('/task_cat_list/<areaURL>')
+def taskCatList(areaURL):
+    area = translitFromURL(areaURL)
+
     cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE area_name = %s', (area,))
     taskInfo = cur.fetchall()
     conn.commit()
-    return render_template("task_cat_list.html", taskInfo=taskInfo, area=area)
+    return render_template("task_cat_list.html", taskInfo=taskInfo, areaURL=areaURL)
 
-# резюме полностью
-@app.route('/task_cat_item/<itemid>')
+# задание полностью
+@app.route('/task_cat_item/<itemid>', methods=['GET', 'POST'])
 def taskCatItem(itemid):
     cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE task_id = %s', (itemid,))
     result = cur.fetchall()
