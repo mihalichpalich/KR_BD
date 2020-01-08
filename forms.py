@@ -6,14 +6,18 @@ from functions import *
 
 industriesSelect = []
 professionsSelect = []
+areasSelect = []
 
 industries = selectColumn('industry_name', 'industry')
 professions = selectColumn('profession_name', 'profession')
+areas = selectColumn('area_name', 'area')
 
 for i in industries:
     industriesSelect.append((i, i))
 for i in professions:
     professionsSelect.append((i, i))
+for i in areas:
+    areasSelect.append((i, i))
 
 class SignUpForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов')])
@@ -66,15 +70,8 @@ class ProfEdCustomerForm(FlaskForm):
     customerEmail = StringField('e-mail: ')
 
 class ProfEdPerformerForm(FlaskForm):
-    areasSelect = []
-
-    areas = selectColumn('area_name', 'area')
-    for i in areas:
-        areasSelect.append((i, i))
-    areasSelect.insert(0, ('', ''))
-
     performerName = StringField('Имя: ')
-    performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect, default='')
+    performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect)
     servicesDescr = StringField('О своей деятельности:  ')
     performerPhone = StringField('Телефон: ')
     performerEmail = StringField('e-mail: ')
@@ -86,7 +83,7 @@ class CreateItemCompanyForm(FlaskForm):
     minEmpAge = StringField('Минимальный возраст соискателя, лет (числом)*: ', validators=[InputRequired('Не введен минимальный возраст соискателя')])
     maxEmpAge = StringField('Максимальный возраст соискателя, лет (числом): ')
     minSalary = StringField('Минимальная заработная плата, руб (числом)*: ', validators=[InputRequired('Не введена минимальная заработная плата')])
-    minExp = IntegerField('Минимальный опыт работы, лет (числом, если без опыта, то 0)*: ', validators=[Optional(strip_whitespace=False), InputRequired('Не введен минимальный опыт работы')])
+    minExp = IntegerField('Минимальный опыт работы, лет (числом, если без опыта, то 0)*: ', validators=[Optional(strip_whitespace=False)])
     empType = SelectField('Выберите тип занятости: ', choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'), ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
 
 class CreateItemEmployeeForm(FlaskForm):
@@ -98,3 +95,9 @@ class CreateItemEmployeeForm(FlaskForm):
     empType = SelectField('Выберите тип занятости: ',
                           choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'),
                                    ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
+
+class CreateItemCustomerForm(FlaskForm):
+    areaName = SelectField('Выберите сферу деятельности*: ', choices=areasSelect)
+    taskDescr = StringField('Опишите задание*: ', validators=[InputRequired('Не введено описание задания')])
+    dateInput = DateField('Введите дату выполнения в формате ГГГГ-ММ-ДД*: ', format='%Y-%m-%d', validators=[DataRequired('Дата введена в неправильном формате!')])
+    price = IntegerField('Стоимость выполнения (числом, в рублях)*: ', validators=[Optional(strip_whitespace=False), InputRequired('Не введена стоимость выполнения')])

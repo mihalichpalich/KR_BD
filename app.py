@@ -331,10 +331,9 @@ def profileEdit(status, username):
 # добавление записи
 @app.route('/create_item/<status>/<username>', methods=['GET', 'POST'])
 def createItem(status, username):
-    areas = selectColumn('area_name', 'area')
-
     formCompany = CreateItemCompanyForm()
     formEmployee = CreateItemEmployeeForm()
+    formCustomer = CreateItemCustomerForm()
 
     if g.user:
         userID = getUserID(username)
@@ -394,45 +393,29 @@ def createItem(status, username):
                 return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, formEmployee=formEmployee)
             return redirect(url_for('itemList', status=status, username=username))
 
-        if status == 'customer':
-            if request.method == 'POST':
-                areaName = request.form.get('area_name')
-                taskDescr = request.form.get('task_descr')
-                day = request.form.get('day')
-                month = request.form.get('month')
-                year = request.form.get('year')
-                price = request.form.get('price')
+        if status == 'customer' and formCustomer.validate_on_submit():
+            areaName = formCustomer.areaName.data
+            taskDescr = formCustomer.taskDescr.data
+            dateInput = formCustomer.dateInput.data
+            price = formCustomer.price.data
 
-                try:
-                    dayNum = int(day)
-                    monthNum = int(month)
-                    yearNum = int(year)
-                except ValueError:
-                    return render_template("create_item.html", message='Дата выполнения заполнена неправильно!',
-                                           status=status, username=username, areas=areas)
+            today = date.today()
 
-                execDate = date(yearNum, monthNum, dayNum)
-                today = date.today()
+            if dateInput < today:
+                return render_template("create_item.html", message='Дата выполнения не может быть раньше сегодняшней',
+                                       status=status, username=username, formCustomer=formCustomer)
 
-                if execDate < today:
-                    return render_template("create_item.html", message='Дата выполнения не может быть раньше сегодняшней',
-                                           status=status, username=username, areas=areas)
-
-                try:
-                    if areaName == '' or taskDescr == '' or execDate == '' or price == '':
-                        return render_template("create_item.html", message='Пожайлуста, заполните все поля',
-                                               status=status, username=username, areas=areas)
-                    else:
-                        cur.execute(
-                            "insert into task (user_id, area_name, task_descr, exec_date, price) values (%s, %s, %s, %s, %s)",
-                            (userID, areaName, taskDescr, execDate, price))
-                        conn.commit()
-                except psycopg2.errors.InvalidTextRepresentation:
-                    conn.rollback()
-                    return render_template("create_item.html", message='В численные поля записан текст!',
-                                           status=status, username=username, areas=areas)
-                return redirect(url_for('itemList', status=status, username=username))
-    return render_template("create_item.html", status=status, username=username, areas=areas, formCompany=formCompany, formEmployee=formEmployee)
+            try:
+                cur.execute(
+                    "insert into task (user_id, area_name, task_descr, exec_date, price) values (%s, %s, %s, %s, %s)",
+                    (userID, areaName, taskDescr, dateInput, price))
+                conn.commit()
+            except psycopg2.errors.InvalidTextRepresentation:
+                conn.rollback()
+                return render_template("create_item.html", message='В численные поля записан текст!',
+                                       status=status, username=username, formCustomer=formCustomer)
+            return redirect(url_for('itemList', status=status, username=username))
+    return render_template("create_item.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
 
 # список записей
 @app.route('/item_list/<status>/<username>')
