@@ -1,183 +1,128 @@
+{% from "_render_field.html" import render_field%}
 {% extends "bootstrap/base.html" %}
 
 {% block title %}Редактирование профиля{% endblock title %}
 
 {%- block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ (url_for('profile', status=status, username=username)) }}">
+                            {% if status == 'company' %}
+                                О компании
+                            {% elif status == 'employee' %}
+                                О соискателе
+                            {% elif status == 'customer' %}
+                                О заказчике
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    {% if not warning %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ (url_for('createItem', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Добавить вакансию
+                                {% elif status == 'employee' %}
+                                    Добавить резюме
+                                {% elif status == 'customer' %}
+                                    Добавить задание
+                                {% endif %}
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ (url_for('itemList', status=status, username=username)) }}">
+                                {% if status == 'company' %}
+                                    Мои вакансии
+                                {% elif status == 'employee' %}
+                                    Мои резюме
+                                {% elif status == 'customer' %}
+                                    Мои задания
+                                {% endif %}
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item">
+                        {% if status == 'company' %}
+                           <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
+                        {% endif %}
+                        {% if status == 'employee' %}
+                           <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
+                        {% endif %}
+                        {% if status == 'performer' %}
+                           <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
+                        {% endif %}
+                    </li>
+                </ul>
+
+                <button type="button" class="btn btn-primary"><a href="{{ (url_for('dropsession')) }}" class="text-white">Выйти</a></button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <form action="{{ url_for('editItem', status=status, username=username, itemid=itemid) }}" method="POST">
                     {% if status == 'company' %}
+                        {{ formCompany.csrf_token }}
                         <div class="row justify-content-center">
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="industry_name">Выберите отрасль:</label>
-                                    <select class="custom-select" id="inputGroupSelect01" name="industry_name">
-                                        <option selected value="" disabled></option>
-
-                                        {% for item in industries %}
-                                            <option value="{{ item }}">{{ item }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                {{ render_field(formCompany.industryName)}}
                             </div>
 
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="profession_name">Выберите должность: </label>
-                                    <select class="custom-select" id="inputGroupSelect02" name="profession_name">
-                                        <option selected value="" disabled></option>
-
-                                        {% for item in professions %}
-                                            <option value="{{ item }}">{{ item }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                {{ render_field(formCompany.professionName)}}
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="employee_sex">Выберите пол соискателя: </label>
-                            <select class="custom-select" id="inputGroupSelect03" name="employee_sex">
-                                <option selected value="" disabled></option>
-                                <option value="мужчина">мужчина</option>
-                                <option value="женщина">женщина</option>
-                            </select>
-                        </div>
+                        {{ render_field(formCompany.employeeSex)}}
 
                         <div class="row justify-content-center">
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="min_emp_age">Минимальный возраст соискателя (числом):</label>
-                                    <input type="text" name="min_emp_age" class="form-control" id="min_emp_age">
-                                </div>
+                                {{ render_field(formCompany.minEmpAge)}}
                             </div>
 
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="max_emp_age">Максимальный возраст соискателя (числом):</label>
-                                    <input type="text" name="max_emp_age" class="form-control" id="max_emp_age">
-                                </div>
+                                {{ render_field(formCompany.maxEmpAge)}}
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="min_salary">Минимальная заработная плата (числом):</label>
-                            <input type="text" name="min_salary" class="form-control" id="min_salary">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="min_exp">Минимальный опыт работы (числом):</label>
-                            <input type="text" name="min_exp" class="form-control" id="min_exp">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="emp_type">Выберите тип занятости: </label>
-                            <select class="custom-select" id="inputGroupSelect04" name="emp_type">
-                                <option selected value="" disabled></option>
-                                <option value="полная">полная</option>
-                                <option value="частичная">частичная</option>
-                                <option value="вахта">вахта</option>
-                                <option value="удаленная работа">удаленная работа</option>
-                                <option value="стажировка">стажировка</option>
-                            </select>
-                        </div>
+                        {{ render_field(formCompany.minSalary)}}
+                        {{ render_field(formCompany.minExp)}}
+                        {{ render_field(formCompany.empType)}}
                     {% endif %}
 
                     {% if status == 'employee' %}
+                        {{ formEmployee.csrf_token }}
                         <div class="row justify-content-center">
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="industry_name">Выберите отрасль:</label>
-                                    <select class="custom-select" id="inputGroupSelect01" name="industry_name">
-                                        <option selected value="" disabled></option>
-
-                                        {% for item in industries %}
-                                            <option value="{{ item }}">{{ item }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                {{ render_field(formEmployee.industryName)}}
                             </div>
 
                             <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="profession_name">Выберите должность: </label>
-                                    <select class="custom-select" id="inputGroupSelect02" name="profession_name">
-                                        <option selected value="" disabled></option>
-
-                                        {% for item in professions %}
-                                            <option value="{{ item }}">{{ item }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                                {{ render_field(formEmployee.professionName)}}
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="min_salary">Заработная плата от (числом):</label>
-                            <input type="text" name="min_salary" class="form-control" id="min_salary">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="min_salary">Заработная плата до (числом):</label>
-                            <input type="text" name="max_salary" class="form-control" id="max_salary">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="min_exp">Опыт работы (числом):</label>
-                            <input type="text" name="exp" class="form-control" id="exp">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="emp_type">Выберите тип занятости: </label>
-                            <select class="custom-select" id="inputGroupSelect04" name="emp_type">
-                                <option selected value="" disabled></option>
-                                <option value="полная">полная</option>
-                                <option value="частичная">частичная</option>
-                                <option value="вахта">вахта</option>
-                                <option value="удаленная работа">удаленная работа</option>
-                                <option value="стажировка">стажировка</option>
-                            </select>
-                        </div>
+                        {{ render_field(formEmployee.minSalary)}}
+                        {{ render_field(formEmployee.maxSalary)}}
+                        {{ render_field(formEmployee.exp)}}
+                        {{ render_field(formEmployee.empType)}}
                     {% endif %}
 
                     {% if status == 'customer' %}
-                        <div class="form-group">
-                            <label for="area_name">Выберите сферу деятельности:</label>
-                            <select class="custom-select" id="inputGroupSelect01" name="area_name">
-                                <option selected value="" disabled></option>
-
-                                {% for item in areas %}
-                                    <option value="{{ item }}">{{ item }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="task_descr">Опишите задание:</label>
-                            <input type="text" name="task_descr" class="form-control" id="task_descr">
-                        </div>
-
-                        <p>Введите дату выполнения задания в формате ЧЧ.ММ.ГГГГ</p>
-
-                        <div class="form-inline">
-                            <div class="form-group">
-                                <input type="text" name="day" class="form-control" id="day" placeholder="ЧЧ">
-                            </div>
-
-                            <div class="form-group">
-                                <input type="text" name="month" class="form-control" id="month" placeholder="ММ">
-                            </div>
-
-                            <div class="form-group">
-                                <input type="text" name="year" class="form-control" id="year" placeholder="ГГГГ">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="price">Стоимость выполнения (числом, в рублях):</label>
-                            <input type="text" name="price" class="form-control" id="price">
-                        </div>
+                        {{ formCustomer.csrf_token }}
+                        {{ render_field(formCustomer.areaName)}}
+                        {{ render_field(formCustomer.taskDescr)}}
+                        {{ render_field(formCustomer.dateInput)}}
+                        {{ render_field(formCustomer.price)}}
                     {% endif %}
 
                     <div class="row justify-content-end form-group">

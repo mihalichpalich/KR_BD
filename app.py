@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import datetime, date
 
 from flask import *
 from flask_bootstrap import Bootstrap
@@ -168,46 +168,58 @@ def profile(status, username):
 # страница редактирования профиля
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
 def profileEdit(status, username):
+    userID = getUserID(username)
+
+    cur.execute('SELECT email, phone FROM person WHERE user_id = %s', (userID,))
+    result = cur.fetchall()
+    print(result)
+    contacts = []
+    if result:
+        contacts = list(sum(result, ()))
+    conn.commit()
+
+    cur.execute('SELECT inn, company_name FROM company WHERE user_id = %s', (userID,))
+    result = cur.fetchall()
+    companyInfo = []
+    if result:
+        companyInfo = list(sum(result, ()))
+    conn.commit()
+
+    cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
+    result = cur.fetchone()
+    employeeInfo = []
+    if result is not None:
+        employeeInfo = result[0]
+    conn.commit()
+
+    cur.execute('SELECT customer_name FROM customer WHERE user_id = %s', (userID,))
+    result = cur.fetchone()
+    customerInfo = ''
+    if result is not None:
+        customerInfo = result[0]
+    conn.commit()
+
+    cur.execute('SELECT performer_name, area_name, services_descr FROM performer WHERE user_id = %s', (userID,))
+    result = cur.fetchall()
+    performerInfo = []
+    if result:
+        performerInfo = list(sum(result, ()))
+    conn.commit()
+
+    if companyInfo:
+        formCompany = ProfEdCompanyForm(inn=companyInfo[0], companyName=companyInfo[1], companyEmail=contacts[0], companyPhone=contacts[1])
+    else:
+        formCompany = []
+
+    formEmployee = ProfEdEmployeeForm(fullName=employeeInfo, employeeEmail=contacts[0], employeePhone=contacts[1])
+    formCustomer = ProfEdCustomerForm(customerName=customerInfo, customerEmail=contacts[0], customerPhone=contacts[1])
+
+    if performerInfo:
+        formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2], performerEmail=contacts[0], performerPhone=contacts[1])
+    else:
+        formPerformer = []
+
     if g.user:
-        userID = getUserID(username)
-
-        cur.execute('SELECT company_name FROM company WHERE user_id = %s', (userID,))
-        result = cur.fetchone()
-        companyInfo = []
-        if result:
-            companyInfo = result[0]
-        conn.commit()
-
-        cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
-        result = cur.fetchone()
-        employeeInfo = []
-        if result is not None:
-            employeeInfo = result[0]
-        conn.commit()
-
-        cur.execute('SELECT customer_name FROM customer WHERE user_id = %s', (userID,))
-        result = cur.fetchone()
-        customerInfo = ''
-        if result is not None:
-            customerInfo = result[0]
-        conn.commit()
-
-        cur.execute('SELECT performer_name, area_name, services_descr FROM performer WHERE user_id = %s', (userID,))
-        result = cur.fetchall()
-        performerInfo = []
-        if result:
-            performerInfo = list(sum(result, ()))
-        conn.commit()
-
-        formCompany = ProfEdCompanyForm(companyName=companyInfo)
-        formEmployee = ProfEdEmployeeForm(fullName=employeeInfo)
-        formCustomer = ProfEdCustomerForm(customerName=customerInfo)
-
-        if performerInfo:
-            formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2])
-        else:
-            formPerformer = []
-
         if status == 'company' and formCompany.validate_on_submit():
             inn = formCompany.inn.data
             companyName = formCompany.companyName.data
@@ -235,7 +247,7 @@ def profileEdit(status, username):
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("profile_edit.html",
-                                       message='Компания с данным ИНН, телефоном или email уже существует!',
+                                       message='Пользователь с данным ИНН, телефоном или email уже существует!',
                                        status=status, username=username, formCompany=formCompany)
             except psycopg2.errors.StringDataRightTruncation:
                 conn.rollback()
@@ -265,7 +277,7 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Соискатель с данным телефоном или email уже существует!', status=status, username=username, formEmployee=formEmployee)
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, formEmployee=formEmployee)
             return redirect(url_for('profile', status=status, username=username))
 
         if status == 'customer' and formCustomer.validate_on_submit():
@@ -273,7 +285,7 @@ def profileEdit(status, username):
             customerPhone = formCustomer.customerPhone.data
             customerEmail = formCustomer.customerEmail.data
 
-            isCustomer = userExist('employee', userID)
+            isCustomer = userExist('customer', userID)
 
             try:
                 if isCustomer == 0:
@@ -290,7 +302,7 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Заказчик с данным телефоном или email уже существует!', status=status, username=username, formCustomer=formCustomer)
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, formCustomer=formCustomer)
             return redirect(url_for('profile', status=status, username=username, formCustomer=formCustomer))
 
         if status == 'performer' and formPerformer.validate_on_submit():
@@ -323,10 +335,10 @@ def profileEdit(status, username):
                     conn.commit()
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
-                return render_template("profile_edit.html", message='Исполнитель с данным телефоном или email уже существует!', status=status, username=username, formPerformer=formPerformer)
+                return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, formPerformer=formPerformer)
             return redirect(url_for('profile', status=status, username=username))
         return render_template("profile_edit.html", status=status, username=username, formPerformer=formPerformer, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
-    return render_template("profile_edit.html", status=status, username=username)
+    return render_template("profile_edit.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer, formPerformer=formPerformer)
 
 # добавление записи
 @app.route('/create_item/<status>/<username>', methods=['GET', 'POST'])
@@ -456,21 +468,44 @@ def itemList(status, username):
 # изменение записи
 @app.route('/edititem/<status>/<username>/<itemid>', methods=['GET', 'POST'])
 def editItem(status, username, itemid):
-    industries = selectColumn('industry_name', 'industry')
-    professions = selectColumn('profession_name', 'profession')
-    areas = selectColumn('area_name', 'area')
+    formCompany = []
+    formEmployee = []
+    formCustomer = []
 
     if g.user:
         if status == 'company':
-            if request.method == 'POST':
-                industryName = request.form.get('industry_name')
-                professionName = request.form.get('profession_name')
-                employeeSex = request.form.get('employee_sex')
-                minEmpAge = request.form.get('min_emp_age')
-                maxEmpAge = request.form.get('max_emp_age')
-                minSalary = request.form.get('min_salary')
-                minExp = request.form.get('min_exp')
-                empType = request.form.get('emp_type')
+            cur.execute(
+                'SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type FROM vacancy WHERE vacancy_id = %s',
+                (itemid))
+            vacancyInfo = cur.fetchall()
+            vacancyInfo = list(sum(vacancyInfo, ()))
+            conn.commit()
+
+            for i in range(len(vacancyInfo)):
+                if vacancyInfo[i] is None:
+                    vacancyInfo[i] = ''
+            if vacancyInfo[6] == 'без опыта':
+                vacancyInfo[6] = 0
+
+            formCompany = CreateItemCompanyForm(industryName=vacancyInfo[0], professionName=vacancyInfo[1],
+                                                employeeSex=vacancyInfo[2], minEmpAge=vacancyInfo[3],
+                                                maxEmpAge=vacancyInfo[4], minSalary=vacancyInfo[5],
+                                                minExp=vacancyInfo[6], empType=vacancyInfo[7])
+
+            if formCompany.validate_on_submit():
+                industryName = formCompany.industryName.data
+                professionName = formCompany.professionName.data
+                employeeSex = formCompany.employeeSex.data
+                minEmpAge = formCompany.minEmpAge.data
+                maxEmpAge = formCompany.maxEmpAge.data
+                minSalary = formCompany.minSalary.data
+                minExp = formCompany.minExp.data
+                empType = formCompany.empType.data
+
+                if maxEmpAge == '':
+                    maxEmpAge = None
+                if minExp == 0:
+                    minExp = 'без опыта'
 
                 if industryName != None:
                     cur.execute('update vacancy set industry_name = %s WHERE vacancy_id = %s', (industryName, itemid,))
@@ -493,13 +528,36 @@ def editItem(status, username, itemid):
                 return redirect(url_for('itemList', status=status, username=username))
 
         if status == 'employee':
-            if request.method == 'POST':
-                industryName = request.form.get('industry_name')
-                professionName = request.form.get('profession_name')
-                minSalary = request.form.get('min_salary')
-                maxSalary = request.form.get('max_salary')
-                exp = request.form.get('exp')
-                empType = request.form.get('emp_type')
+            cur.execute(
+                'SELECT industry_name, profession_name, min_salary, max_salary, exp, emp_type FROM cv WHERE cv_id = %s',
+                (itemid))
+            cvInfo = cur.fetchall()
+            cvInfo = list(sum(cvInfo, ()))
+            conn.commit()
+
+            for i in range(len(cvInfo)):
+                if cvInfo[i] is None:
+                    cvInfo[i] = ''
+            if cvInfo[4] == 'без опыта':
+                cvInfo[4] = 0
+
+            formEmployee = CreateItemEmployeeForm(industryName=cvInfo[0], professionName=cvInfo[1], minSalary=cvInfo[2],
+                                                  maxSalary=cvInfo[3], exp=cvInfo[4], empType=cvInfo[5])
+
+            if formEmployee.validate_on_submit():
+                industryName = formEmployee.industryName.data
+                professionName = formEmployee.professionName.data
+                minSalary = formEmployee.minSalary.data
+                maxSalary = formEmployee.maxSalary.data
+                exp = formEmployee.exp.data
+                empType = formEmployee.empType.data
+
+                if minSalary == '':
+                    minSalary = None
+                elif maxSalary == '':
+                    maxSalary = None
+                if exp == 0:
+                    exp = 'без опыта'
 
                 if industryName != None:
                     cur.execute('update cv set industry_name = %s WHERE cv_id = %s', (industryName, itemid,))
@@ -517,41 +575,39 @@ def editItem(status, username, itemid):
                 return redirect(url_for('itemList', status=status, username=username))
 
         if status == 'customer':
-            if request.method == 'POST':
-                areaName = request.form.get('area_name')
-                taskDescr = request.form.get('task_descr')
-                day = request.form.get('day')
-                month = request.form.get('month')
-                year = request.form.get('year')
-                price = request.form.get('price')
+            cur.execute('SELECT area_name, task_descr, exec_date, price FROM task WHERE task_id = %s', (itemid))
+            taskInfo = cur.fetchall()
+            taskInfo = list(sum(taskInfo, ()))
+            conn.commit()
+
+            datetime_obj = datetime.strptime(taskInfo[2], "%Y-%m-%d")
+            taskInfo[2] = datetime_obj.date()
+
+            formCustomer = CreateItemCustomerForm(areaName=taskInfo[0], taskDescr=taskInfo[1], dateInput=taskInfo[2], price=taskInfo[3])
+
+            if formCustomer.validate_on_submit():
+                areaName = formCustomer.areaName.data
+                taskDescr = formCustomer.taskDescr.data
+                dateInput = formCustomer.dateInput.data
+                price = formCustomer.price.data
+
+                today = date.today()
 
                 if areaName != None:
                     cur.execute('update task set area_name = %s WHERE task_id = %s', (areaName, itemid,))
                 if taskDescr != '':
                     cur.execute('update task set task_descr = %s WHERE task_id = %s', (taskDescr, itemid,))
-                if day != '' or month != '' or year != '':
-                    try:
-                        dayNum = int(day)
-                        monthNum = int(month)
-                        yearNum = int(year)
-                    except ValueError:
-                        return render_template("create_item.html", message='Дата выполнения заполнена неправильно!',
-                                               status=status, username=username, areas=areas)
-
-                    execDate = date(yearNum, monthNum, dayNum)
-                    today = date.today()
-
-                    if execDate < today:
-                        return render_template("create_item.html",
+                if dateInput != '':
+                    if dateInput < today:
+                        return render_template("edit_item.html",
                                                message='Дата выполнения не может быть раньше сегодняшней',
-                                               status=status, username=username, areas=areas)
-
-                    cur.execute('update task set exec_date = %s WHERE task_id = %s', (execDate, itemid,))
+                                               status=status, username=username, formCustomer=formCustomer)
+                        cur.execute('update task set exec_date = %s WHERE task_id = %s', (execDate, itemid,))
                 if price != '':
                     cur.execute('update task set price = %s WHERE task_id = %s', (price, itemid,))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("edit_item.html", status=status, username=username, itemid=itemid, industries=industries, professions=professions, areas=areas)
+    return render_template("edit_item.html", status=status, username=username, itemid=itemid, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
 
 # удаление записи
 @app.route('/deleteitem/<status>/<username>/<itemid>', methods=['POST'])
