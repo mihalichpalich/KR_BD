@@ -4,6 +4,17 @@ from wtforms.validators import InputRequired, Length, DataRequired, Optional
 
 from functions import *
 
+industriesSelect = []
+professionsSelect = []
+
+industries = selectColumn('industry_name', 'industry')
+professions = selectColumn('profession_name', 'profession')
+
+for i in industries:
+    industriesSelect.append((i, i))
+for i in professions:
+    professionsSelect.append((i, i))
+
 class SignUpForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов')])
     password = PasswordField('Пароль', validators=[InputRequired('Не введен пароль')])
@@ -69,17 +80,6 @@ class ProfEdPerformerForm(FlaskForm):
     performerEmail = StringField('e-mail: ')
 
 class CreateItemCompanyForm(FlaskForm):
-    industriesSelect = []
-    professionsSelect = []
-
-    industries = selectColumn('industry_name', 'industry')
-    professions = selectColumn('profession_name', 'profession')
-
-    for i in industries:
-        industriesSelect.append((i, i))
-    for i in professions:
-        professionsSelect.append((i, i))
-
     industryName = SelectField('Выберите отрасль*: ', choices=industriesSelect)
     professionName = SelectField('Выберите должность*: ', choices=professionsSelect)
     employeeSex = SelectField('Выберите пол соискателя: ', choices=[('', ''), ('мужской', 'мужской'), ('женский', 'женский')], default='')
@@ -88,3 +88,13 @@ class CreateItemCompanyForm(FlaskForm):
     minSalary = StringField('Минимальная заработная плата, руб (числом)*: ', validators=[InputRequired('Не введена минимальная заработная плата')])
     minExp = IntegerField('Минимальный опыт работы, лет (числом, если без опыта, то 0)*: ', validators=[Optional(strip_whitespace=False), InputRequired('Не введен минимальный опыт работы')])
     empType = SelectField('Выберите тип занятости: ', choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'), ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
+
+class CreateItemEmployeeForm(FlaskForm):
+    industryName = SelectField('Выберите отрасль*: ', choices=industriesSelect)
+    professionName = SelectField('Выберите должность*: ', choices=professionsSelect)
+    minSalary = StringField('Минимальная заработная плата, руб (числом): ')
+    maxSalary = StringField('Максимальная заработная плата, руб (числом): ')
+    exp = IntegerField('Опыт работы, лет (числом, если без опыта, то 0)*: ', validators=[Optional(strip_whitespace=False), InputRequired('Не введен опыт работы')])
+    empType = SelectField('Выберите тип занятости: ',
+                          choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'),
+                                   ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])

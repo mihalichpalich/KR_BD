@@ -33,7 +33,7 @@ def createDatabase():
         cur.execute("CREATE TABLE if not exists vacancy (vacancy_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, employee_sex text, min_emp_age int not null, max_emp_age int, min_salary int not null, min_exp text not null, emp_type text not null, vac_pub_data text not null);")
         conn.commit()
         cur.execute(
-            "CREATE TABLE if not exists cv (cv_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, min_salary int, max_salary int, exp text not null, emp_type text not null, cv_pub_data text not null);")
+            "CREATE TABLE if not exists cv (cv_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, min_salary text, max_salary text, exp text not null, emp_type text not null, cv_pub_data text not null);")
         conn.commit()
         cur.execute(
             "CREATE TABLE if not exists browsing (user_id int not null, cv_id int not null, view_data text not null, foreign key (user_id) references company on delete cascade, foreign key (cv_id) references cv on delete cascade);")

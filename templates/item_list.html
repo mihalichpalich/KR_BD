@@ -112,11 +112,11 @@
                                     <p><strong>Отрасль: </strong>{{ item[1] }}</p>
                                     <p><strong>Должность: </strong>{{ item[2] }}</p>
 
-                                    {% if item[3] is not none %}
+                                    {% if item[3] %}
                                         <p><strong>Заработная плата от: </strong>{{ item[3] }}</p>
                                     {% endif %}
 
-                                    {% if item[4] is not none %}
+                                    {% if item[4] %}
                                         <p><strong>Заработная плата до: </strong>{{ item[4] }}</p>
                                     {% endif %}
 

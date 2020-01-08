@@ -334,6 +334,7 @@ def createItem(status, username):
     areas = selectColumn('area_name', 'area')
 
     formCompany = CreateItemCompanyForm()
+    formEmployee = CreateItemEmployeeForm()
 
     if g.user:
         userID = getUserID(username)
@@ -366,34 +367,32 @@ def createItem(status, username):
                 return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, formCompany=formCompany)
             return redirect(url_for('itemList', status=status, username=username))
 
-        if status == 'employee':
-            if request.method == 'POST':
-                industryName = request.form.get('industry_name')
-                professionName = request.form.get('profession_name')
-                minSalary = request.form.get('min_salary')
-                maxSalary = request.form.get('max_salary')
-                exp = request.form.get('exp')
-                empType = request.form.get('emp_type')
+        if status == 'employee' and formEmployee.validate_on_submit():
+            industryName = formEmployee.industryName.data
+            professionName = formEmployee.professionName.data
+            minSalary = formEmployee.minSalary.data
+            maxSalary = formEmployee.maxSalary.data
+            exp = formEmployee.exp.data
+            empType = formEmployee.empType.data
 
-                cvPubData = date.today()
+            cvPubData = date.today()
 
-                if minSalary == '':
-                    minSalary = None
-                elif maxSalary == '':
-                    maxSalary = None
+            if minSalary == '':
+                minSalary = None
+            elif maxSalary == '':
+                maxSalary = None
+            if exp == 0:
+                exp = 'без опыта'
 
-                try:
-                    if industryName == '' or professionName == '' or exp == '' or empType == '':
-                        return render_template("create_item.html", message='Пожайлуста, заполните все поля', status=status, username=username)
-                    else:
-                        cur.execute(
-                        "insert into cv (user_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s)",
-                        (userID, industryName, professionName, minSalary, maxSalary, exp, empType, cvPubData))
-                        conn.commit()
-                except psycopg2.errors.InvalidTextRepresentation:
-                    conn.rollback()
-                    return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username)
-                return redirect(url_for('itemList', status=status, username=username))
+            try:
+                cur.execute(
+                "insert into cv (user_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (userID, industryName, professionName, minSalary, maxSalary, exp, empType, cvPubData))
+                conn.commit()
+            except psycopg2.errors.InvalidTextRepresentation:
+                conn.rollback()
+                return render_template("create_item.html", message='В численные поля записан текст!', status=status, username=username, formEmployee=formEmployee)
+            return redirect(url_for('itemList', status=status, username=username))
 
         if status == 'customer':
             if request.method == 'POST':
@@ -433,7 +432,7 @@ def createItem(status, username):
                     return render_template("create_item.html", message='В численные поля записан текст!',
                                            status=status, username=username, areas=areas)
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("create_item.html", status=status, username=username, areas=areas, formCompany=formCompany)
+    return render_template("create_item.html", status=status, username=username, areas=areas, formCompany=formCompany, formEmployee=formEmployee)
 
 # список записей
 @app.route('/item_list/<status>/<username>')
