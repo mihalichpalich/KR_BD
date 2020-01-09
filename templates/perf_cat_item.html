@@ -8,9 +8,17 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('perfCatAreas', username=username)) }}">К списку сфер деятельности</a>
+                        <a class="nav-link active" href="{{ (url_for('perfCatAreas', username=username, status=status)) }}">К списку сфер деятельности</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ (url_for('perfCatList', username=username, status=status, areaURL=areaURL)) }}">К списку исполнителей</a>
                     </li>
                 </ul>
+
+                <button type="button" class="btn btn-primary">
+                    <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                </button>
             </div>
         </div>
     </nav>

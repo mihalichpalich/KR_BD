@@ -3,6 +3,24 @@
 {% block title %}Каталог вакансий{% endblock title %}
 
 {%- block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                </ul>
+
+                <button type="button" class="btn btn-primary">
+                    {% if username == 'guest' %}
+                        <a href="{{ (url_for('index')) }}" class="text-white">На главную</a>
+                    {% else %}
+                        <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </nav>
+
+
     <div class="container">
         <div class="row">
             <h1>Каталог вакансий</h1>

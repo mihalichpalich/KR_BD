@@ -50,16 +50,16 @@
 
                     <li class="nav-item">
                         {% if status == 'company' %}
-                           <a class="nav-link" href="{{ (url_for('cvCatInd', username=username)) }}">Каталог резюме</a>
+                           <a class="nav-link" href="{{ (url_for('cvCatInd', username=username, status=status)) }}">Каталог резюме</a>
                         {% endif %}
                         {% if status == 'employee' %}
-                           <a class="nav-link" href="{{ (url_for('vacCatInd')) }}">Каталог вакансий</a>
+                           <a class="nav-link" href="{{ (url_for('vacCatInd', username=username, status=status)) }}">Каталог вакансий</a>
                         {% endif %}
                         {% if status == 'customer' %}
-                           <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username)) }}">Каталог исполнителей</a>
+                           <a class="nav-link" href="{{ (url_for('perfCatAreas', username=username, status=status)) }}">Каталог исполнителей</a>
                         {% endif %}
                         {% if status == 'performer' %}
-                           <a class="nav-link" href="{{ (url_for('taskCatAreas')) }}">Каталог заданий</a>
+                           <a class="nav-link" href="{{ (url_for('taskCatAreas', username=username, status=status)) }}">Каталог заданий</a>
                         {% endif %}
                     </li>
                 </ul>

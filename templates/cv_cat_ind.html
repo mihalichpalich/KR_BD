@@ -3,6 +3,19 @@
 {% block title %}Каталог резюме{% endblock title %}
 
 {%- block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                </ul>
+
+                <button type="button" class="btn btn-primary">
+                    <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="row">
             <h1>Каталог резюме</h1>
@@ -10,7 +23,7 @@
         {% for item in data %}
             <div class="row">
                 <div class="col-xs-3">
-                    <p><a href="{{ url_for('cvCatPro', username=username, industryURL=item[2]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
+                    <p><a href="{{ url_for('cvCatPro', username=username, status=status, industryURL=item[2]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
                 </div>
             </div>
         {% endfor %}

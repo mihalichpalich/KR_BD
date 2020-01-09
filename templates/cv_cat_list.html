@@ -8,12 +8,17 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('cvCatInd', username=username)) }}">К списку отраслей</a>
+                        <a class="nav-link active" href="{{ (url_for('cvCatInd', username=username, status=status)) }}">К списку отраслей</a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('cvCatPro', username=username, industryURL=industryURL )) }}">К списку должностей</a>
+                        <a class="nav-link active" href="{{ (url_for('cvCatPro', username=username, status=status, industryURL=industryURL )) }}">К списку должностей</a>
                     </li>
                 </ul>
+
+                <button type="button" class="btn btn-primary">
+                    <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                </button>
             </div>
         </div>
     </nav>
@@ -41,7 +46,7 @@
                             <p><strong>Опыт работы (лет): </strong>{{ item[5] }}</p>
                             <p><strong>Тип занятости: </strong>{{ item[6] }}</p>
                             <p><strong>Дата публикации: </strong>{{ item[7] }}</p>
-                            <form action="{{ url_for('cvCatItem', itemid=item[0], userid=userid, industryURL=industryURL, professionURL=professionURL) }}" method="POST">
+                            <form action="{{ url_for('cvCatItem', itemid=item[0], userid=userid, username=username, status=status, industryURL=industryURL, professionURL=professionURL) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>

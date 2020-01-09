@@ -10,7 +10,6 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 Bootstrap(app)
 
-createDatabase()
 createAdmin()
 
 @app.before_request
@@ -163,7 +162,7 @@ def profile(status, username):
             return render_template("profile.html", status=status, username=username, performerName=performerName,
                                    servicesDescr=servicesDescr, performerArea=performerArea, performerPhone=performerPhone,
                                    performerEmail=performerEmail, warning=warning)
-    return render_template("login.html")
+    return render_template("profile.html", status=status, username=username)
 
 # страница редактирования профиля
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
@@ -659,8 +658,8 @@ def deleteItem(status, username, itemid):
 
 # КАТАЛОГ РЕЗЮМЕ
 # отрасли
-@app.route('/cv_cat_ind/<username>')
-def cvCatInd(username):
+@app.route('/cv_cat_ind/<status>/<username>')
+def cvCatInd(username, status):
     if g.user:
         counts = []
         industriesURL = []
@@ -684,11 +683,11 @@ def cvCatInd(username):
             industriesURL.append(itemUni)
 
         data = list(zip(industries, counts, industriesURL))
-    return render_template("cv_cat_ind.html", username=username, data=data)
+    return render_template("cv_cat_ind.html", username=username, data=data, status=status)
 
 # должности
-@app.route('/cv_cat_pro/<username>/<industryURL>')
-def cvCatPro(username, industryURL):
+@app.route('/cv_cat_pro/<status>/<username>/<industryURL>')
+def cvCatPro(status, username, industryURL):
     if g.user:
         counts = []
         professionsURL = []
@@ -713,11 +712,11 @@ def cvCatPro(username, industryURL):
             professionsURL.append(itemUni)
 
         data = list(zip(professions, counts, professionsURL))
-    return render_template("cv_cat_pro.html", username=username, data=data, industryURL=industryURL)
+    return render_template("cv_cat_pro.html", username=username, data=data, industryURL=industryURL, status=status)
 
 # список резюме
-@app.route('/cv_cat_list/<username>/<industryURL>/<professionURL>')
-def cvCatList(username, industryURL, professionURL):
+@app.route('/cv_cat_list/<status>/<username>/<industryURL>/<professionURL>')
+def cvCatList(username, industryURL, professionURL, status):
     userID = getUserID(username)
     industry = translitFromURL(industryURL)
     profession = translitFromURL(professionURL)
@@ -726,11 +725,11 @@ def cvCatList(username, industryURL, professionURL):
         cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         cvInfo = cur.fetchall()
         conn.commit()
-    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industryURL=industryURL, professionURL=professionURL)
+    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industryURL=industryURL, professionURL=professionURL, status=status)
 
 # резюме полностью
-@app.route('/cv_cat_item/<industryURL>/<professionURL>/<userid>/<itemid>', methods=['GET', 'POST'])
-def cvCatItem(userid, itemid, industryURL, professionURL):
+@app.route('/cv_cat_item/<status>/<username>/<industryURL>/<professionURL>/<userid>/<itemid>', methods=['GET', 'POST'])
+def cvCatItem(userid, itemid, industryURL, professionURL, status, username):
     if g.user:
         data = date.today()
 
@@ -751,12 +750,12 @@ def cvCatItem(userid, itemid, industryURL, professionURL):
         result = cur.fetchall()
         contacts = list(sum(result , ()))
         conn.commit()
-    return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts)
+    return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts, status=status, username=username, industryURL=industryURL, professionURL=professionURL)
 
 # КАТАЛОГ ВАКАНСИЙ
 # отрасли
-@app.route('/vacancy_cat_ind/')
-def vacCatInd():
+@app.route('/vacancy_cat_ind/<status>/<username>')
+def vacCatInd(status, username):
     counts = []
     industriesURL = []
 
@@ -779,7 +778,7 @@ def vacCatInd():
         industriesURL.append(itemUni)
 
     data = list(zip(industries, counts, industriesURL))
-    return render_template("vacancy_cat_ind.html", data=data)
+    return render_template("vacancy_cat_ind.html", data=data, username=username, status=status)
 
 # должности
 @app.route('/vacancy_cat_pro/<industryURL>')
@@ -898,8 +897,8 @@ def taskCatItem(itemid):
 
 # КАТАЛОГ ИСПОЛНИТЕЛЕЙ
 # сферы деятельности
-@app.route('/perf_cat_areas/<username>')
-def perfCatAreas(username):
+@app.route('/perf_cat_areas/<status>/<username>')
+def perfCatAreas(status, username):
     if g.user:
         counts = []
         areasURL = []
@@ -923,21 +922,21 @@ def perfCatAreas(username):
             areasURL.append(itemUni)
 
         data = list(zip(areas, counts, areasURL))
-    return render_template("perf_cat_areas.html", username=username, data=data)
+    return render_template("perf_cat_areas.html", username=username, data=data, status=status)
 
 # список исполнителей
-@app.route('/perf_cat_list/<username>/<areaURL>')
-def perfCatList(username, areaURL):
+@app.route('/perf_cat_list/<status>/<username>/<areaURL>')
+def perfCatList(username, areaURL, status):
     area = translitFromURL(areaURL)
 
     cur.execute('SELECT * FROM performer WHERE area_name = %s', (area,))
     perfInfo = cur.fetchall()
     conn.commit()
-    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, areaURL=areaURL)
+    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, areaURL=areaURL, status=status)
 
 # исполнитель полностью
-@app.route('/perf_cat_item/<username>/<itemid>', methods=['GET', 'POST'])
-def perfCatItem(username, itemid):
+@app.route('/perf_cat_item/<status>/<username>/<areaURL>/<itemid>', methods=['GET', 'POST'])
+def perfCatItem(username, itemid, status, areaURL):
     cur.execute('SELECT * FROM performer WHERE user_id = %s', (itemid,))
     result = cur.fetchall()
     perfInfo = list(sum(result , ()))
@@ -947,7 +946,7 @@ def perfCatItem(username, itemid):
     result = cur.fetchall()
     contacts = list(sum(result , ()))
     conn.commit()
-    return render_template("perf_cat_item.html", username=username, perfInfo=perfInfo, contacts=contacts)
+    return render_template("perf_cat_item.html", username=username, perfInfo=perfInfo, contacts=contacts, status=status, areaURL=areaURL)
 
 # удаление сессии
 @app.route('/dropsession')

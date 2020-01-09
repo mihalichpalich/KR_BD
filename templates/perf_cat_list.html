@@ -8,9 +8,13 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('perfCatAreas', username=username)) }}">К списку сфер деятельности</a>
+                        <a class="nav-link active" href="{{ (url_for('perfCatAreas', username=username, status=status)) }}">К списку сфер деятельности</a>
                     </li>
                 </ul>
+
+                <button type="button" class="btn btn-primary">
+                    <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                </button>
             </div>
         </div>
     </nav>
@@ -28,7 +32,7 @@
                             <p><strong>Сфера деятельности: </strong>{{ item[2] }}</p>
                             <p><strong>Описание услуг: </strong>{{ item[3] }}</p>
 
-                            <form action="{{ url_for('perfCatItem', itemid=item[0], username=username) }}" method="POST">
+                            <form action="{{ url_for('perfCatItem', itemid=item[0], username=username, status=status, areaURL=areaURL) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>
