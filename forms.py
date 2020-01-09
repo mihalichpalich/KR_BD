@@ -4,8 +4,6 @@ from wtforms.validators import InputRequired, Length, DataRequired, Optional, Em
 
 from functions import *
 
-createDatabase()
-
 industriesSelect = []
 professionsSelect = []
 areasSelect = []
@@ -22,10 +20,10 @@ for i in areas:
     areasSelect.append((i, i))
 
 class SignUpForm(FlaskForm):
-    login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов')])
-    password = PasswordField('Пароль', validators=[InputRequired('Не введен пароль')])
+    login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов'), Regexp('^[a-zA-Z0-9_]+$', message="Логин должен содержать только латинские буквы, цифры и _")])
+    password = PasswordField('Пароль', validators=[InputRequired('Не введен пароль'), Regexp('^[a-zA-Z0-9_]+$', message="Пароль должен содержать только латинские буквы, цифры и _")])
     email = StringField('Email', validators=[InputRequired("Не введен email"), Email("Не похоже на email")])
-    phone = StringField('Телефон', validators=[InputRequired('Не введен телефон')])
+    phone = StringField('Телефон', validators=[InputRequired('Не введен телефон'), Regexp('^[+()0-9\s]+$', message="Не похоже на email")])
     status = RadioField('Выберите статус: ', choices=[('company', 'Работодатель'), ('employee', 'Соискатель'), ('customer', 'Заказчик'), ('performer', 'Исполнитель')])
 
 class LoginForm(FlaskForm):
@@ -38,19 +36,19 @@ class PwRecForm(FlaskForm):
     passwordNew = PasswordField('Введите новый пароль еще раз: ', validators=[InputRequired('Не введен пароль')])
 
 class IpAddForm(FlaskForm):
-    industry = StringField('Введите отрасль: ', validators=[InputRequired('Не введена отрасль'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
-    profession = StringField('Введите соответствующую ей должность: ', validators=[InputRequired('Не введена должность'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
+    industry = StringField('Введите отрасль: ', validators=[InputRequired('Не введена отрасль'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
+    profession = StringField('Введите соответствующую ей должность: ', validators=[InputRequired('Не введена должность'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
 
 class IndEditForm(FlaskForm):
-    industryOld = StringField('Введите название отрасли: ', validators=[InputRequired('Не введена отрасль'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
-    industryNew = StringField('Введите новое название отрасли: ', validators=[InputRequired('Не введена отрасль'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
+    industryOld = StringField('Введите название отрасли: ', validators=[InputRequired('Не введена отрасль'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
+    industryNew = StringField('Введите новое название отрасли: ', validators=[InputRequired('Не введена отрасль'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
 
 class AreasAddForm(FlaskForm):
-    area = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
+    area = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
 
 class AreasEditForm(FlaskForm):
-    areaOld = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
-    areaNew = StringField('Введите новое название: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('[а-яА-ЯёЁ]', message="Вводите русскими символами")])
+    areaOld = StringField('Введите сферу деятельности: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
+    areaNew = StringField('Введите новое название: ', validators=[InputRequired('Не введена сфера деятельности'), Regexp('^[а-яА-ЯёЁ\s]+$', message="Вводите русскими символами")])
 
 class DateForm(FlaskForm):
     date = DateField('', format='%Y-%m-%d', validators=[DataRequired('Дата введена в неправильном формате!')])

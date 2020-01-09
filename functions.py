@@ -6,45 +6,6 @@ from transliterate import translit, get_available_language_codes
 conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
 cur = conn.cursor()
 
-def createDatabase():
-    try:
-        cur.execute(
-            "CREATE TABLE if not exists person (user_id serial primary key, login varchar(15) NOT null unique, password TEXT NOT NULL, status TEXT NOT NULL, email TEXT NOT NULL unique, phone TEXT NOT NULL unique);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists company (user_id int primary key references person on delete cascade, inn varchar(10) NOT null unique, company_name TEXT NOT NULL);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists employee (user_id int primary key references person on delete cascade, full_name text NOT null);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists customer (user_id int primary key references person on delete cascade, customer_name text NOT null);")
-        conn.commit()
-        cur.execute("CREATE TABLE if not exists area (area_name text not null primary key);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists performer (user_id int primary key references person on delete cascade, performer_name text NOT null, area_name text NOT null references area on update cascade on delete cascade, services_descr TEXT NOT NULL);")
-        conn.commit()
-        cur.execute("CREATE TABLE if not exists industry (industry_name text not null primary key);")
-        conn.commit()
-        cur.execute("CREATE TABLE if not exists profession (profession_name text not null primary key);")
-        conn.commit()
-        cur.execute("CREATE TABLE if not exists industry_profession (industry_name text not null, profession_name text not null, foreign key (industry_name) references industry on update cascade, foreign key (profession_name) references profession on update cascade);")
-        conn.commit()
-        cur.execute("CREATE TABLE if not exists vacancy (vacancy_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, employee_sex text, min_emp_age int not null, max_emp_age int, min_salary int not null, min_exp text not null, emp_type text not null, vac_pub_data text not null);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists cv (cv_id serial primary key, user_id int references person on delete cascade, industry_name text not null references industry on update cascade, profession_name text not null references profession on update cascade, min_salary text, max_salary text, exp text not null, emp_type text not null, cv_pub_data text not null);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists browsing (browsing_id serial primary key, user_id int not null, cv_id int not null, view_data text not null, foreign key (user_id) references company on delete cascade, foreign key (cv_id) references cv on delete cascade);")
-        conn.commit()
-        cur.execute(
-            "CREATE TABLE if not exists task (task_id serial primary key, user_id int references person on delete cascade , area_name text not null references area on update cascade, task_descr text not null, exec_date text not null, price int not null);")
-        conn.commit()
-    except Exception as e:
-        print(e)
-
 def createAdmin():
     adminPswdHash = generate_password_hash('admin')
 
