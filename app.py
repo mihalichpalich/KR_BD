@@ -1,4 +1,6 @@
 import os
+import sys
+import logging
 from datetime import datetime, date
 
 from flask import *
@@ -9,6 +11,8 @@ from forms import *
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 Bootstrap(app)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 
 createAdmin()
 
