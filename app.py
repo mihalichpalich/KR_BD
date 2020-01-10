@@ -7,7 +7,7 @@ from flask_bootstrap import Bootstrap
 from forms import *
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 Bootstrap(app)
 
 createAdmin()
