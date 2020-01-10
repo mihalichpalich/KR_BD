@@ -171,7 +171,6 @@ def profileEdit(status, username):
 
     cur.execute('SELECT email, phone FROM person WHERE user_id = %s', (userID,))
     result = cur.fetchall()
-    print(result)
     contacts = []
     if result:
         contacts = list(sum(result, ()))
@@ -186,7 +185,7 @@ def profileEdit(status, username):
 
     cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
     result = cur.fetchone()
-    employeeInfo = []
+    employeeInfo = ''
     if result is not None:
         employeeInfo = result[0]
     conn.commit()

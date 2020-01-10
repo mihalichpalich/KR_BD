@@ -8,7 +8,6 @@ cur = conn.cursor()
 
 def createAdmin():
     adminPswdHash = generate_password_hash('admin')
-
     try:
         cur.execute("insert into person (login, password, status, email, phone) values ('admin', %s, 'admin', 'admin@admin.ru', '0000000000')", (adminPswdHash, ))
         conn.commit()
@@ -67,11 +66,9 @@ def getUserID(name):
 def translitToURL(data):
     dataUni = translit(data, 'ru', reversed=True)
     dataURL = "_".join(dataUni.split())
-    dataURLLow = dataURL.lower()
-    return dataURLLow
+    return dataURL
 
 def translitFromURL(data):
     dataURL = translit(data, 'ru')
-    dataURL = dataURL.capitalize()
-    dataRus = dataURL.replace('~', ' ')
+    dataRus = dataURL.replace('_', ' ')
     return dataRus
