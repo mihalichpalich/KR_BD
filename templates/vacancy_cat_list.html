@@ -8,13 +8,21 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('vacCatInd')) }}">К списку отраслей</a>
+                        <a class="nav-link active" href="{{ (url_for('vacCatInd', username=username, status=status)) }}">К списку отраслей</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('vacCatPro', industryURL=industryURL )) }}">К списку должностей</a>
+                        <a class="nav-link active" href="{{ (url_for('vacCatPro', username=username, status=status, industryURL=industryURL )) }}">К списку должностей</a>
                     </li>
                 </ul>
             </div>
+
+            <button type="button" class="btn btn-primary">
+                {% if username == 'guest' %}
+                    <a href="{{ (url_for('index')) }}" class="text-white">На главную</a>
+                {% else %}
+                    <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                {% endif %}
+            </button>
         </div>
     </nav>
 
@@ -30,7 +38,7 @@
                             <p><strong>Отрасль: </strong>{{ item[1] }}</p>
                             <p><strong>Должность: </strong>{{ item[2] }}</p>
 
-                            {% if item[3] is not none %}
+                            {% if item[3] %}
                                 <p><strong>Пол соискателя: </strong>{{ item[3] }}</p>
                             {% endif %}
 
@@ -45,7 +53,7 @@
                             <p><strong>Тип занятости: </strong>{{ item[8] }}</p>
                             <p><strong>Дата публикации: </strong>{{ item[9] }}</p>
 
-                            <form action="{{ url_for('vacCatItem', itemid=item[0], industryURL=industryURL, professionURL=professionURL) }}" method="POST">
+                            <form action="{{ url_for('vacCatItem', itemid=item[0], industryURL=industryURL, professionURL=professionURL, status=status, username=username) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>

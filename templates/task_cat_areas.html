@@ -3,6 +3,23 @@
 {% block title %}Каталог заданий{% endblock title %}
 
 {%- block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                </ul>
+
+                <button type="button" class="btn btn-primary">
+                    {% if username == 'guest' %}
+                        <a href="{{ (url_for('index')) }}" class="text-white">На главную</a>
+                    {% else %}
+                        <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="row">
             <h1>Каталог заданий</h1>
@@ -10,7 +27,7 @@
         {% for item in data %}
             <div class="row">
                 <div class="col-xs-3">
-                    <p><a href="{{ url_for('taskCatList', areaURL=item[2]) }}">{{ item[0] }}</a> {{ item[1] }}</p>
+                    <p><a href="{{ url_for('taskCatList', areaURL=item[2], username=username, status=status) }}">{{ item[0] }}</a> {{ item[1] }}</p>
                 </div>
             </div>
         {% endfor %}

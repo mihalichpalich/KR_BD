@@ -70,5 +70,6 @@ def translitToURL(data):
 
 def translitFromURL(data):
     dataURL = translit(data, 'ru')
+    dataURL = dataURL.lower()
     dataRus = dataURL.replace('_', ' ')
     return dataRus

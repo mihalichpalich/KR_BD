@@ -8,9 +8,17 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('taskCatAreas')) }}">К списку сфер деятельности</a>
+                        <a class="nav-link active" href="{{ (url_for('taskCatAreas', username=username, status=status)) }}">К списку сфер деятельности</a>
                     </li>
                 </ul>
+
+                <button type="button" class="btn btn-primary">
+                    {% if username == 'guest' %}
+                        <a href="{{ (url_for('index')) }}" class="text-white">На главную</a>
+                    {% else %}
+                        <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                    {% endif %}
+                </button>
             </div>
         </div>
     </nav>
@@ -29,7 +37,7 @@
                             <p><strong>Дата выполнения: </strong>{{ item[3] }}</p>
                             <p><strong>Стоимость: </strong>{{ item[4] }} руб.</p>
 
-                            <form action="{{ url_for('taskCatItem', itemid=item[0], areaURL=areaURL) }}" method="POST">
+                            <form action="{{ url_for('taskCatItem', itemid=item[0], areaURL=areaURL, username=username, status=status) }}" method="POST">
                                 <button type="submit" class="btn btn-primary">Смотреть далее</button>
                             </form>
                         </div>

@@ -8,12 +8,23 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('vacCatInd')) }}">К списку отраслей</a>
+                        <a class="nav-link active" href="{{ (url_for('vacCatInd', username=username, status=status)) }}">К списку отраслей</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ (url_for('vacCatPro', industryURL=industryURL )) }}">К списку должностей</a>
+                        <a class="nav-link active" href="{{ (url_for('vacCatPro', username=username, status=status, industryURL=industryURL )) }}">К списку должностей</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ (url_for('vacCatList', username=username, status=status, industryURL=industryURL, professionURL=professionURL)) }}">К списку вакансий</a>
                     </li>
                 </ul>
+
+                <button type="button" class="btn btn-primary">
+                    {% if username == 'guest' %}
+                        <a href="{{ (url_for('index')) }}" class="text-white">На главную</a>
+                    {% else %}
+                        <a href="{{ (url_for('profile', username=username, status=status)) }}" class="text-white">Вернуться в личный кабинет</a>
+                    {% endif %}
+            </button>
             </div>
         </div>
     </nav>
@@ -29,7 +40,7 @@
                         <p><strong>Отрасль: </strong>{{ vacancyInfo[1] }}</p>
                         <p><strong>Должность: </strong>{{ vacancyInfo[2] }}</p>
 
-                        {% if vacancyInfo[3] is not none %}
+                        {% if vacancyInfo[3] %}
                             <p><strong>Пол соискателя: </strong>{{ vacancyInfo[3] }}</p>
                         {% endif %}
 

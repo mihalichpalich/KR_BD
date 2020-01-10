@@ -780,8 +780,8 @@ def vacCatInd(status, username):
     return render_template("vacancy_cat_ind.html", data=data, username=username, status=status)
 
 # должности
-@app.route('/vacancy_cat_pro/<industryURL>')
-def vacCatPro(industryURL):
+@app.route('/vacancy_cat_pro/<status>/<username>/<industryURL>')
+def vacCatPro(status, username, industryURL):
     counts = []
     professionsURL = []
     industry = translitFromURL(industryURL)
@@ -805,22 +805,22 @@ def vacCatPro(industryURL):
         professionsURL.append(itemUni)
 
     data = list(zip(professions, counts, professionsURL))
-    return render_template("vacancy_cat_pro.html", data=data, industryURL=industryURL)
+    return render_template("vacancy_cat_pro.html", data=data, industryURL=industryURL, status=status, username=username)
 
 # список вакансий
-@app.route('/vacancy_cat_list/<industryURL>/<professionURL>')
-def vacCatList(industryURL, professionURL):
+@app.route('/vacancy_cat_list/<status>/<username>/<industryURL>/<professionURL>')
+def vacCatList(status, username, industryURL, professionURL):
     industry = translitFromURL(industryURL)
     profession = translitFromURL(professionURL)
 
     cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE industry_name = %s and profession_name = %s', (industry, profession))
     vacancyInfo = cur.fetchall()
     conn.commit()
-    return render_template("vacancy_cat_list.html", vacancyInfo=vacancyInfo, industryURL=industryURL, professionURL=professionURL)
+    return render_template("vacancy_cat_list.html", vacancyInfo=vacancyInfo, industryURL=industryURL, professionURL=professionURL, status=status, username=username)
 
 # вакансия полностью
-@app.route('/vacancy_cat_item/<industryURL>/<professionURL>/<itemid>', methods=['GET', 'POST'])
-def vacCatItem(itemid, industryURL, professionURL):
+@app.route('/vacancy_cat_item/<status>/<username>/<industryURL>/<professionURL>/<itemid>', methods=['GET', 'POST'])
+def vacCatItem(itemid, industryURL, professionURL, status, username):
     cur.execute('SELECT vacancy_id, industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type, vac_pub_data FROM vacancy WHERE vacancy_id = %s', (itemid))
     result = cur.fetchall()
     vacancyInfo = list(sum(result , ()))
@@ -835,12 +835,12 @@ def vacCatItem(itemid, industryURL, professionURL):
     result = cur.fetchall()
     contacts = list(sum(result , ()))
     conn.commit()
-    return render_template("vacancy_cat_item.html", itemid=itemid, vacancyInfo=vacancyInfo, companyName=companyName, contacts=contacts)
+    return render_template("vacancy_cat_item.html", itemid=itemid, vacancyInfo=vacancyInfo, companyName=companyName, contacts=contacts, status=status, username=username, industryURL=industryURL, professionURL=professionURL)
 
 # КАТАЛОГ ЗАДАНИЙ
 # сферы деятельности
-@app.route('/task_cat_areas/')
-def taskCatAreas():
+@app.route('/task_cat_areas/<status>/<username>')
+def taskCatAreas(status, username):
     counts = []
     areasURL = []
 
@@ -863,21 +863,21 @@ def taskCatAreas():
         areasURL.append(itemUni)
 
     data = list(zip(areas, counts, areasURL))
-    return render_template("task_cat_areas.html", data=data)
+    return render_template("task_cat_areas.html", data=data, status=status, username=username)
 
 # список заданий
-@app.route('/task_cat_list/<areaURL>')
-def taskCatList(areaURL):
+@app.route('/task_cat_list/<status>/<username>/<areaURL>')
+def taskCatList(status, username, areaURL):
     area = translitFromURL(areaURL)
 
     cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE area_name = %s', (area,))
     taskInfo = cur.fetchall()
     conn.commit()
-    return render_template("task_cat_list.html", taskInfo=taskInfo, areaURL=areaURL)
+    return render_template("task_cat_list.html", taskInfo=taskInfo, areaURL=areaURL, status=status, username=username)
 
 # задание полностью
-@app.route('/task_cat_item/<itemid>', methods=['GET', 'POST'])
-def taskCatItem(itemid):
+@app.route('/task_cat_item/<status>/<username>/<areaURL>/<itemid>', methods=['GET', 'POST'])
+def taskCatItem(status, username, areaURL, itemid):
     cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE task_id = %s', (itemid,))
     result = cur.fetchall()
     taskInfo = list(sum(result , ()))
@@ -892,7 +892,7 @@ def taskCatItem(itemid):
     result = cur.fetchall()
     contacts = list(sum(result , ()))
     conn.commit()
-    return render_template("task_cat_item.html", taskInfo=taskInfo, customerName=customerName, contacts=contacts)
+    return render_template("task_cat_item.html", taskInfo=taskInfo, customerName=customerName, contacts=contacts, status=status, username=username, areaURL=areaURL)
 
 # КАТАЛОГ ИСПОЛНИТЕЛЕЙ
 # сферы деятельности
