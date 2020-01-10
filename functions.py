@@ -3,7 +3,8 @@ from psycopg2 import sql
 from werkzeug.security import generate_password_hash, check_password_hash
 from transliterate import translit, get_available_language_codes
 
-conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
+# conn = psycopg2.connect(dbname='rabota', user='postgres', password='root', host='localhost')
+conn = psycopg2.connect(dbname='d3vou38tcmklqd', user='clmffelyzoahcy', password='deb2988affb57c7fb3394889d08f96784d67c02990b0e43b880224d761030eb1', host='ec2-54-246-90-26.eu-west-1.compute.amazonaws.com')
 cur = conn.cursor()
 
 def createAdmin():
