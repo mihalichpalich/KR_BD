@@ -161,62 +161,64 @@ def profile(status, username):
             return render_template("profile.html", status=status, username=username, performerName=performerName,
                                    servicesDescr=servicesDescr, performerArea=performerArea, performerPhone=performerPhone,
                                    performerEmail=performerEmail, warning=warning)
-    return render_template("profile.html", status=status, username=username)
+        return render_template("profile.html", status=status, username=username)
+    else:
+        return redirect(url_for('login'))
 
 # страница редактирования профиля
 @app.route('/profile_edit/<status>/<username>', methods=['GET', 'POST'])
 def profileEdit(status, username):
-    userID = getUserID(username)
-
-    cur.execute('SELECT email, phone FROM person WHERE user_id = %s', (userID,))
-    result = cur.fetchall()
-    contacts = []
-    if result:
-        contacts = list(sum(result, ()))
-    conn.commit()
-
-    cur.execute('SELECT inn, company_name FROM company WHERE user_id = %s', (userID,))
-    result = cur.fetchall()
-    companyInfo = []
-    if result:
-        companyInfo = list(sum(result, ()))
-    conn.commit()
-
-    cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
-    result = cur.fetchone()
-    employeeInfo = ''
-    if result is not None:
-        employeeInfo = result[0]
-    conn.commit()
-
-    cur.execute('SELECT customer_name FROM customer WHERE user_id = %s', (userID,))
-    result = cur.fetchone()
-    customerInfo = ''
-    if result is not None:
-        customerInfo = result[0]
-    conn.commit()
-
-    cur.execute('SELECT performer_name, area_name, services_descr FROM performer WHERE user_id = %s', (userID,))
-    result = cur.fetchall()
-    performerInfo = []
-    if result:
-        performerInfo = list(sum(result, ()))
-    conn.commit()
-
-    if companyInfo:
-        formCompany = ProfEdCompanyForm(inn=companyInfo[0], companyName=companyInfo[1], companyEmail=contacts[0], companyPhone=contacts[1])
-    else:
-        formCompany = ProfEdCompanyForm(companyEmail=contacts[0], companyPhone=contacts[1])
-
-    formEmployee = ProfEdEmployeeForm(fullName=employeeInfo, employeeEmail=contacts[0], employeePhone=contacts[1])
-    formCustomer = ProfEdCustomerForm(customerName=customerInfo, customerEmail=contacts[0], customerPhone=contacts[1])
-
-    if performerInfo:
-        formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2], performerEmail=contacts[0], performerPhone=contacts[1])
-    else:
-        formPerformer = ProfEdPerformerForm(performerEmail=contacts[0], performerPhone=contacts[1])
-
     if g.user:
+        userID = getUserID(username)
+
+        cur.execute('SELECT email, phone FROM person WHERE user_id = %s', (userID,))
+        result = cur.fetchall()
+        contacts = []
+        if result:
+            contacts = list(sum(result, ()))
+        conn.commit()
+
+        cur.execute('SELECT inn, company_name FROM company WHERE user_id = %s', (userID,))
+        result = cur.fetchall()
+        companyInfo = []
+        if result:
+            companyInfo = list(sum(result, ()))
+        conn.commit()
+
+        cur.execute('SELECT full_name FROM employee WHERE user_id = %s', (userID,))
+        result = cur.fetchone()
+        employeeInfo = ''
+        if result is not None:
+            employeeInfo = result[0]
+        conn.commit()
+
+        cur.execute('SELECT customer_name FROM customer WHERE user_id = %s', (userID,))
+        result = cur.fetchone()
+        customerInfo = ''
+        if result is not None:
+            customerInfo = result[0]
+        conn.commit()
+
+        cur.execute('SELECT performer_name, area_name, services_descr FROM performer WHERE user_id = %s', (userID,))
+        result = cur.fetchall()
+        performerInfo = []
+        if result:
+            performerInfo = list(sum(result, ()))
+        conn.commit()
+
+        if companyInfo:
+            formCompany = ProfEdCompanyForm(inn=companyInfo[0], companyName=companyInfo[1], companyEmail=contacts[0], companyPhone=contacts[1])
+        else:
+            formCompany = ProfEdCompanyForm(companyEmail=contacts[0], companyPhone=contacts[1])
+
+        formEmployee = ProfEdEmployeeForm(fullName=employeeInfo, employeeEmail=contacts[0], employeePhone=contacts[1])
+        formCustomer = ProfEdCustomerForm(customerName=customerInfo, customerEmail=contacts[0], customerPhone=contacts[1])
+
+        if performerInfo:
+            formPerformer = ProfEdPerformerForm(performerName=performerInfo[0], performerArea=performerInfo[1], servicesDescr=performerInfo[2], performerEmail=contacts[0], performerPhone=contacts[1])
+        else:
+            formPerformer = ProfEdPerformerForm(performerEmail=contacts[0], performerPhone=contacts[1])
+
         if status == 'company' and formCompany.validate_on_submit():
             inn = formCompany.inn.data
             companyName = formCompany.companyName.data
@@ -334,17 +336,17 @@ def profileEdit(status, username):
                 conn.rollback()
                 return render_template("profile_edit.html", message='Пользователь с данным телефоном или email уже существует!', status=status, username=username, formPerformer=formPerformer)
             return redirect(url_for('profile', status=status, username=username))
-        return render_template("profile_edit.html", status=status, username=username, formPerformer=formPerformer, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
-    return render_template("profile_edit.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer, formPerformer=formPerformer)
+        return render_template("profile_edit.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer, formPerformer=formPerformer)
+    else:
+        return redirect(url_for('login'))
 
 # добавление записи
 @app.route('/create_item/<status>/<username>', methods=['GET', 'POST'])
 def createItem(status, username):
-    formCompany = CreateItemCompanyForm()
-    formEmployee = CreateItemEmployeeForm()
-    formCustomer = CreateItemCustomerForm()
-
     if g.user:
+        formCompany = CreateItemCompanyForm()
+        formEmployee = CreateItemEmployeeForm()
+        formCustomer = CreateItemCustomerForm()
         userID = getUserID(username)
 
         if status == 'company' and formCompany.validate_on_submit():
@@ -437,7 +439,9 @@ def createItem(status, username):
                 return render_template("create_item.html", message='В численные поля записан текст!',
                                        status=status, username=username, formCustomer=formCustomer)
             return redirect(url_for('itemList', status=status, username=username))
-    return render_template("create_item.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
+        return render_template("create_item.html", status=status, username=username, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
+    else:
+        return redirect(url_for('login'))
 
 # список записей
 @app.route('/item_list/<status>/<username>')
@@ -473,16 +477,18 @@ def itemList(status, username):
         cur.execute('SELECT task_id, area_name, task_descr, exec_date, price FROM task WHERE user_id = %s', (userID,))
         taskInfo = cur.fetchall()
         conn.commit()
-    return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo, taskInfo=taskInfo)
+        return render_template("item_list.html", status=status, username=username, vacancyInfo=vacancyInfo, cvInfo=cvInfo, taskInfo=taskInfo)
+    else:
+        return redirect(url_for('login'))
 
 # изменение записи
 @app.route('/edititem/<status>/<username>/<itemid>', methods=['GET', 'POST'])
 def editItem(status, username, itemid):
-    formCompany = []
-    formEmployee = []
-    formCustomer = []
-
     if g.user:
+        formCompany = []
+        formEmployee = []
+        formCustomer = []
+
         if status == 'company':
             cur.execute(
                 'SELECT industry_name, profession_name, employee_sex, min_emp_age, max_emp_age, min_salary, min_exp, emp_type FROM vacancy WHERE vacancy_id = %s',
@@ -635,7 +641,9 @@ def editItem(status, username, itemid):
                     cur.execute('update task set price = %s WHERE task_id = %s', (price, itemid,))
                 conn.commit()
                 return redirect(url_for('itemList', status=status, username=username))
-    return render_template("edit_item.html", status=status, username=username, itemid=itemid, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
+        return render_template("edit_item.html", status=status, username=username, itemid=itemid, formCompany=formCompany, formEmployee=formEmployee, formCustomer=formCustomer)
+    else:
+        return redirect(url_for('login'))
 
 # удаление записи
 @app.route('/deleteitem/<status>/<username>/<itemid>', methods=['POST'])
@@ -652,7 +660,9 @@ def deleteItem(status, username, itemid):
         if status == 'customer':
             cur.execute('delete from task where task_id = %s', (itemid,))
             conn.commit()
-    return redirect(url_for('itemList', status=status, username=username))
+        return redirect(url_for('itemList', status=status, username=username))
+    else:
+        return redirect(url_for('login'))
 
 # КАТАЛОГ РЕЗЮМЕ
 # отрасли
@@ -681,7 +691,9 @@ def cvCatInd(username, status):
             industriesURL.append(itemUni)
 
         data = list(zip(industries, counts, industriesURL))
-    return render_template("cv_cat_ind.html", username=username, data=data, status=status)
+        return render_template("cv_cat_ind.html", username=username, data=data, status=status)
+    else:
+        return redirect(url_for('login'))
 
 # должности
 @app.route('/cv_cat_pro/<status>/<username>/<industryURL>')
@@ -710,20 +722,24 @@ def cvCatPro(status, username, industryURL):
             professionsURL.append(itemUni)
 
         data = list(zip(professions, counts, professionsURL))
-    return render_template("cv_cat_pro.html", username=username, data=data, industryURL=industryURL, status=status)
+        return render_template("cv_cat_pro.html", username=username, data=data, industryURL=industryURL, status=status)
+    else:
+        return redirect(url_for('login'))
 
 # список резюме
 @app.route('/cv_cat_list/<status>/<username>/<industryURL>/<professionURL>')
 def cvCatList(username, industryURL, professionURL, status):
-    userID = getUserID(username)
-    industry = translitFromURL(industryURL)
-    profession = translitFromURL(professionURL)
-
     if g.user:
+        userID = getUserID(username)
+        industry = translitFromURL(industryURL)
+        profession = translitFromURL(professionURL)
+
         cur.execute('SELECT cv_id, industry_name, profession_name, min_salary, max_salary, exp, emp_type, cv_pub_data FROM cv WHERE industry_name = %s and profession_name = %s', (industry, profession))
         cvInfo = cur.fetchall()
         conn.commit()
-    return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industryURL=industryURL, professionURL=professionURL, status=status)
+        return render_template("cv_cat_list.html", username=username, cvInfo=cvInfo, userid=userID, industryURL=industryURL, professionURL=professionURL, status=status)
+    else:
+        return redirect(url_for('login'))
 
 # резюме полностью
 @app.route('/cv_cat_item/<status>/<username>/<industryURL>/<professionURL>/<userid>/<itemid>', methods=['GET', 'POST'])
@@ -748,7 +764,9 @@ def cvCatItem(userid, itemid, industryURL, professionURL, status, username):
         result = cur.fetchall()
         contacts = list(sum(result , ()))
         conn.commit()
-    return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts, status=status, username=username, industryURL=industryURL, professionURL=professionURL)
+        return render_template("cv_cat_item.html", itemid=itemid, userid=userid, cvInfo=cvInfo, fullName=fullName, contacts=contacts, status=status, username=username, industryURL=industryURL, professionURL=professionURL)
+    else:
+        return redirect(url_for('login'))
 
 # КАТАЛОГ ВАКАНСИЙ
 # отрасли
@@ -920,31 +938,39 @@ def perfCatAreas(status, username):
             areasURL.append(itemUni)
 
         data = list(zip(areas, counts, areasURL))
-    return render_template("perf_cat_areas.html", username=username, data=data, status=status)
+        return render_template("perf_cat_areas.html", username=username, data=data, status=status)
+    else:
+        return redirect(url_for('login'))
 
 # список исполнителей
 @app.route('/perf_cat_list/<status>/<username>/<areaURL>')
 def perfCatList(username, areaURL, status):
-    area = translitFromURL(areaURL)
+    if g.user:
+        area = translitFromURL(areaURL)
 
-    cur.execute('SELECT * FROM performer WHERE area_name = %s', (area,))
-    perfInfo = cur.fetchall()
-    conn.commit()
-    return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, areaURL=areaURL, status=status)
+        cur.execute('SELECT * FROM performer WHERE area_name = %s', (area,))
+        perfInfo = cur.fetchall()
+        conn.commit()
+        return render_template("perf_cat_list.html", username=username, perfInfo=perfInfo, areaURL=areaURL, status=status)
+    else:
+        return redirect(url_for('login'))
 
 # исполнитель полностью
 @app.route('/perf_cat_item/<status>/<username>/<areaURL>/<itemid>', methods=['GET', 'POST'])
 def perfCatItem(username, itemid, status, areaURL):
-    cur.execute('SELECT * FROM performer WHERE user_id = %s', (itemid,))
-    result = cur.fetchall()
-    perfInfo = list(sum(result , ()))
-    conn.commit()
+    if g.user:
+        cur.execute('SELECT * FROM performer WHERE user_id = %s', (itemid,))
+        result = cur.fetchall()
+        perfInfo = list(sum(result , ()))
+        conn.commit()
 
-    cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from performer where user_id = %s)', (itemid,))
-    result = cur.fetchall()
-    contacts = list(sum(result , ()))
-    conn.commit()
-    return render_template("perf_cat_item.html", username=username, perfInfo=perfInfo, contacts=contacts, status=status, areaURL=areaURL)
+        cur.execute('SELECT email, phone FROM person WHERE user_id = (select user_id from performer where user_id = %s)', (itemid,))
+        result = cur.fetchall()
+        contacts = list(sum(result , ()))
+        conn.commit()
+        return render_template("perf_cat_item.html", username=username, perfInfo=perfInfo, contacts=contacts, status=status, areaURL=areaURL)
+    else:
+        return redirect(url_for('login'))
 
 # удаление сессии
 @app.route('/dropsession')
@@ -957,6 +983,8 @@ def dropsession():
 def admin():
     if g.user:
         return render_template("admin.html")
+    else:
+        return redirect(url_for('login'))
 
 # АДМИНКА, ОТРАСЛИ И ДОЛЖНОСТИ
 # добавление
@@ -985,14 +1013,15 @@ def adminDataIPAdd():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_ip_add.html", message='Данная отрасль или должность уже существует!', industries=industries, professions=professions, form=form)
-    return render_template("admin_data_ip_add.html", industries=industries, professions=professions, form=form)
+        return render_template("admin_data_ip_add.html", industries=industries, professions=professions, form=form)
+    else:
+        return redirect(url_for('login'))
 
 # изменение
 @app.route('/admin_data_ind_edit', methods=['GET', 'POST'])
 def adminDataIndEdit():
-    form = IndEditForm()
-
     if g.user:
+        form = IndEditForm()
         industries = selectColumn('industry_name', 'industry')
 
         if form.validate_on_submit():
@@ -1006,15 +1035,16 @@ def adminDataIndEdit():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_ind_edit.html", message='Данная отрасль уже существует!', form=form)
-    return render_template("admin_data_ind_edit.html", industries=industries, form=form)
+        return render_template("admin_data_ind_edit.html", industries=industries, form=form)
+    else:
+        return redirect(url_for('login'))
 
 # АДМИНКА, СФЕРЫ ДЕЯТЕЛЬНОСТИ
 # добавление
 @app.route('/admin_data_areas_add', methods=['GET', 'POST'])
 def adminDataAreasAdd():
-    form = AreasAddForm()
-
     if g.user:
+        form = AreasAddForm()
         areas = selectColumn('area_name', 'area')
 
         if form.validate_on_submit():
@@ -1027,14 +1057,15 @@ def adminDataAreasAdd():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_areas_add.html", message='Данная сфера деятельности уже существует!', form=form)
-    return render_template("admin_data_areas_add.html", areas=areas, form=form)
+        return render_template("admin_data_areas_add.html", areas=areas, form=form)
+    else:
+        return redirect(url_for('login'))
 
 # изменение
 @app.route('/admin_data_areas_edit', methods=['GET', 'POST'])
 def adminDataAreasEdit():
-    form = AreasEditForm()
-
     if g.user:
+        form = AreasEditForm()
         areas = selectColumn('area_name', 'area')
 
         if form.validate_on_submit():
@@ -1048,47 +1079,58 @@ def adminDataAreasEdit():
             except psycopg2.errors.UniqueViolation:
                 conn.rollback()
                 return render_template("admin_data_areas_edit.html", message='Данная сфера деятельности уже существует!', form=form)
-    return render_template("admin_data_areas_edit.html", areas=areas, form=form)
+        return render_template("admin_data_areas_edit.html", areas=areas, form=form)
+    else:
+        return redirect(url_for('login'))
 
 # АДМИНКА, УДАЛЕНИЕ
 # удаление резюме
 @app.route('/admin_delete_cv', methods=['GET', 'POST'])
 def adminDeleteCv():
-    form = DateForm()
+    if g.user:
+        form = DateForm()
 
-    if g.user and form.validate_on_submit():
-        date = form.date.data
+        if form.validate_on_submit():
+            date = form.date.data
 
-        cur.execute('delete from cv where cv_pub_data::date < %s::date', (date,))
-        conn.commit()
-        return render_template("admin_delete_cv.html", form=form, message="Данные успешно удалены!")
-    return render_template("admin_delete_cv.html", form=form)
+            cur.execute('delete from cv where cv_pub_data::date < %s::date', (date,))
+            conn.commit()
+            return render_template("admin_delete_cv.html", form=form, message="Данные успешно удалены!")
+        return render_template("admin_delete_cv.html", form=form)
+    else:
+        return redirect(url_for('login'))
 
 # удаление вакансий
 @app.route('/admin_delete_vacancy', methods=['GET', 'POST'])
 def adminDeleteVacancy():
-    form = DateForm()
+    if g.user:
+        form = DateForm()
 
-    if g.user and form.validate_on_submit():
-        date = form.date.data
+        if form.validate_on_submit():
+            date = form.date.data
 
-        cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (date,))
-        conn.commit()
-        return render_template("admin_delete_vacancy.html", form=form, message="Данные успешно удалены!")
-    return render_template("admin_delete_vacancy.html", form=form)
+            cur.execute('delete from vacancy where vac_pub_data::date < %s::date', (date,))
+            conn.commit()
+            return render_template("admin_delete_vacancy.html", form=form, message="Данные успешно удалены!")
+        return render_template("admin_delete_vacancy.html", form=form)
+    else:
+        return redirect(url_for('login'))
 
 # удаление заданий
 @app.route('/admin_delete_task', methods=['GET', 'POST'])
 def adminDeleteTask():
-    form = DateForm()
+    if g.user:
+        form = DateForm()
 
-    if g.user and form.validate_on_submit():
-        date = form.date.data
+        if form.validate_on_submit():
+            date = form.date.data
 
-        cur.execute('delete from task where exec_date::date < %s::date', (date,))
-        conn.commit()
-        return render_template("admin_delete_task.html", form=form, message="Данные успешно удалены!")
-    return render_template("admin_delete_task.html", form=form)
+            cur.execute('delete from task where exec_date::date < %s::date', (date,))
+            conn.commit()
+            return render_template("admin_delete_task.html", form=form, message="Данные успешно удалены!")
+        return render_template("admin_delete_task.html", form=form)
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

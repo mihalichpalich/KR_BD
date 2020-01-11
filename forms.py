@@ -4,20 +4,29 @@ from wtforms.validators import InputRequired, Length, DataRequired, Optional, Em
 
 from functions import *
 
-industriesSelect = []
-professionsSelect = []
-areasSelect = []
+def createIndustriesList():
+    industriesList = []
+    industries = selectColumn('industry_name', 'industry')
 
-industries = selectColumn('industry_name', 'industry')
-professions = selectColumn('profession_name', 'profession')
-areas = selectColumn('area_name', 'area')
+    for i in industries:
+        industriesList.append((i, i))
+    return industriesList
 
-for i in industries:
-    industriesSelect.append((i, i))
-for i in professions:
-    professionsSelect.append((i, i))
-for i in areas:
-    areasSelect.append((i, i))
+def createProfessionsList():
+    professionsList = []
+    professions = selectColumn('profession_name', 'profession')
+
+    for i in professions:
+        professionsList.append((i, i))
+    return professionsList
+
+def createAreasList():
+    areasList = []
+    areas = selectColumn('area_name', 'area')
+
+    for i in areas:
+        areasList.append((i, i))
+    return areasList
 
 class SignUpForm(FlaskForm):
     login = StringField('Логин', validators=[InputRequired('Не введен логин'), Length(max=15, message='Логин не должен превышать 15 символов'), Regexp('^[a-z0-9_]+$', message="Логин должен содержать только маленькие латинские буквы, цифры и _")])
@@ -70,6 +79,8 @@ class ProfEdCustomerForm(FlaskForm):
     customerEmail = StringField('e-mail: ')
 
 class ProfEdPerformerForm(FlaskForm):
+    areasSelect = createAreasList()
+
     performerName = StringField('Имя: ')
     performerArea = SelectField('Выберите сферу деятельности: ', choices=areasSelect)
     servicesDescr = StringField('О своей деятельности:  ')
@@ -77,6 +88,9 @@ class ProfEdPerformerForm(FlaskForm):
     performerEmail = StringField('e-mail: ')
 
 class CreateItemCompanyForm(FlaskForm):
+    industriesSelect = createIndustriesList()
+    professionsSelect = createProfessionsList()
+
     industryName = SelectField('Выберите отрасль*: ', choices=industriesSelect)
     professionName = SelectField('Выберите должность*: ', choices=professionsSelect)
     employeeSex = SelectField('Выберите пол соискателя: ', choices=[('', ''), ('мужской', 'мужской'), ('женский', 'женский')], default='')
@@ -87,6 +101,9 @@ class CreateItemCompanyForm(FlaskForm):
     empType = SelectField('Выберите тип занятости: ', choices=[('полная', 'полная'), ('частичная', 'частичная'), ('вахта', 'вахта'), ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
 
 class CreateItemEmployeeForm(FlaskForm):
+    industriesSelect = createIndustriesList()
+    professionsSelect = createProfessionsList()
+
     industryName = SelectField('Выберите отрасль*: ', choices=industriesSelect)
     professionName = SelectField('Выберите должность*: ', choices=professionsSelect)
     minSalary = StringField('Минимальная заработная плата, руб (числом): ')
@@ -97,6 +114,8 @@ class CreateItemEmployeeForm(FlaskForm):
                                    ('удаленная работа', 'удаленная работа'), ('стажировка', 'стажировка')])
 
 class CreateItemCustomerForm(FlaskForm):
+    areasSelect = createAreasList()
+
     areaName = SelectField('Выберите сферу деятельности*: ', choices=areasSelect)
     taskDescr = StringField('Опишите задание*: ', validators=[InputRequired('Не введено описание задания')])
     dateInput = DateField('Введите дату выполнения в формате ГГГГ-ММ-ДД*: ', format='%Y-%m-%d', validators=[DataRequired('Дата введена в неправильном формате!')])
